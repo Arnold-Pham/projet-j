@@ -1,13 +1,13 @@
 import { Authenticated, Unauthenticated } from 'convex/react'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { SignInButton, useUser } from '@clerk/clerk-react'
+import { SignInButton } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
 import Tchat from './components/Tchat'
 
 export default function App() {
 	return (
-		<main className="container max-w-2xl flex flex-col gap-8">
-			<h1 className="text-2xl font-bold my-8 text-center">Projet J</h1>
+		<main className="container mx-auto">
+			<h1 className="text-2xl font-bold mt-5 text-center">Projet J</h1>
 			<ThemeToggle />
 			<Authenticated>
 				<Tchat />
@@ -21,9 +21,4 @@ export default function App() {
 			</Unauthenticated>
 		</main>
 	)
-}
-
-function Username() {
-	const { user } = useUser()
-	return user?.username
 }
