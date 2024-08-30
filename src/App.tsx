@@ -1,8 +1,8 @@
-import { Authenticated, Unauthenticated, useMutation, useQuery } from 'convex/react'
-import { SignInButton, UserButton } from '@clerk/clerk-react'
+import { Authenticated, Unauthenticated } from 'convex/react'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { SignInButton, useUser } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
-import { api } from '../convex/_generated/api'
+import Tchat from './components/Tchat'
 
 export default function App() {
 	return (
@@ -10,7 +10,7 @@ export default function App() {
 			<h1 className="text-2xl font-bold my-8 text-center">Projet J</h1>
 			<ThemeToggle />
 			<Authenticated>
-				<Content />
+				<Tchat />
 			</Authenticated>
 			<Unauthenticated>
 				<div className="flex justify-center">
@@ -23,43 +23,7 @@ export default function App() {
 	)
 }
 
-function Content() {
-	const { numbers, viewer } =
-		useQuery(api.myFunctions.listNumbers, {
-			count: 10
-		}) ?? {}
-	const addNumber = useMutation(api.myFunctions.addNumber)
-
-	return (
-		<>
-			<p>Welcome {viewer}!</p>
-			<p className="flex gap-4 items-center">
-				This is you:
-				<UserButton afterSignOutUrl="#" />
-			</p>
-			<p>Click the button below and open this page in another window - this data is persisted in the Convex cloud database!</p>
-			<p>
-				<Button
-					onClick={() => {
-						void addNumber({ value: Math.floor(Math.random() * 10) })
-					}}
-				>
-					Add a random number
-				</Button>
-			</p>
-			<p>Numbers: {numbers?.length === 0 ? 'Click the button!' : (numbers?.join(', ') ?? '...')}</p>
-			<p>
-				Edit <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">convex/myFunctions.ts</code> to change your backend
-			</p>
-			<p>
-				Edit <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">src/App.tsx</code> to change your frontend
-			</p>
-			<p>
-				Check out{' '}
-				<a className="font-medium text-primary underline underline-offset-4" target="_blank" href="https://docs.convex.dev/home">
-					Convex docs
-				</a>
-			</p>
-		</>
-	)
+function Username() {
+	const { user } = useUser()
+	return user?.username
 }
