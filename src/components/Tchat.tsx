@@ -1,8 +1,7 @@
-// import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from './ui/form'
 import { useMutation, useQuery } from 'convex/react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
-import { useEffect, useRef, useState } from 'react'
 
 export default function Tchat() {
 	const { user } = useUser()
@@ -19,32 +18,23 @@ export default function Tchat() {
 
 	return (
 		<div className="chat">
-			{messages?.map(message =>
-				message.author === user?.id ? (
-					<article key={message._id} className="moi">
-						<div>{user?.username}</div>
-						<p>{message.content}</p>
-					</article>
-				) : (
-					<></>
-					// <article key={message._id} className="grid grid-cols-2 mx-auto my-6 max-w-[380px] animate-message box-border">
-					// 	<div className="font-medium text-primary-text">{user?.username}</div>
-					// 	<p className="text-secondary-text bg-bubbles-background mb-4 py-5 px-4 rounded-l-lg shadow-md text-ellipsis leading-relaxed col-span-2 justify-self-start whitespace-pre-line relative">
-					// 		{message.content}
-					// 	</p>
-					// </article>
-				)
-			)}
+			{messages?.map(message => (
+				<article key={message._id} className={(message.author === user?.id ? 'moi' : '') + ' chat-article'}>
+					<div className="chat-name">{user?.username}</div>
+					<p className="chat-message">{message.content}</p>
+				</article>
+			))}
 			<div ref={messagesEndRef} />
 			<form
+				className="chat-form"
 				onSubmit={async e => {
 					e.preventDefault()
 					await sendMessage({ author: user?.id || 'Attends', content: newMessageText })
 					setNewMessageText('')
 				}}
-				className="fixed bottom-0"
 			>
 				<input
+					className="chat-input"
 					value={newMessageText}
 					onChange={async e => {
 						const text = e.target.value
@@ -52,7 +42,7 @@ export default function Tchat() {
 					}}
 					placeholder="Message..."
 				/>
-				<button type="submit" disabled={!newMessageText}>
+				<button className="chat-button" type="submit" disabled={!newMessageText}>
 					Envoyer
 				</button>
 			</form>
