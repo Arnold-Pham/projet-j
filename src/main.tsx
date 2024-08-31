@@ -4,7 +4,7 @@ import { ConvexReactClient } from 'convex/react'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ThemeProvider } from 'next-themes'
 import ReactDOM from 'react-dom/client'
-import './style/index.css'
+import './index.css'
 import React from 'react'
 import App from './App'
 

@@ -1,24 +1,27 @@
 import { Authenticated, Unauthenticated } from 'convex/react'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { SignInButton } from '@clerk/clerk-react'
 import { Button } from '@/components/ui/button'
-import Tchat from './components/Tchat'
+import Header from './components/Header'
+// import Tchat from './components/Tchat'
 
 export default function App() {
+	const usersId = ['user_2lN2HlMeP2uPFcPWQSZjsKv55UF', 'user_2lMs83SULhErLTyxanAtXKoo41J']
 	return (
-		<main className="container mx-auto">
-			<h1 className="text-2xl font-bold mt-5 text-center">Projet J</h1>
-			<ThemeToggle />
-			<Authenticated>
-				<Tchat />
-			</Authenticated>
-			<Unauthenticated>
-				<div className="flex justify-center">
-					<SignInButton mode="modal">
-						<Button>Sign in</Button>
-					</SignInButton>
-				</div>
-			</Unauthenticated>
-		</main>
+		<>
+			<Header />
+			<main className="container mx-auto">
+				<Authenticated>
+					{/* <Tchat /> */}
+					<></>
+				</Authenticated>
+				<Unauthenticated>
+					<div className="flex justify-center">
+						<SignInButton mode="modal">
+							<Button>Sign in</Button>
+						</SignInButton>
+					</div>
+				</Unauthenticated>
+			</main>
+		</>
 	)
 }
