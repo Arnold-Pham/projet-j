@@ -6,6 +6,7 @@ import { useUser } from '@clerk/clerk-react'
 export default function Tchat() {
 	const { user } = useUser()
 	const messagesEndRef = useRef<HTMLDivElement>(null)
+	const textareaRef = useRef<HTMLTextAreaElement>(null)
 	const [newMessageText, setNewMessageText] = useState('')
 	const sendMessage = useMutation(api.myFunctions.sendMessage)
 	const deleteMessage = useMutation(api.myFunctions.deleteMessage)
@@ -79,19 +80,30 @@ export default function Tchat() {
 					e.preventDefault()
 					await sendMessage({ authorId: user.id, author: user.username, content: newMessageText })
 					setNewMessageText('')
+					textareaRef.current.style.height = 'auto'
 				}}
 			>
-				<input
-					className="w-full h-full p-4 rounded-lg bg-foreground text-background"
+				<textarea
+					ref={textareaRef}
+					className="w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-foreground text-background resize-none overflow-hidden focus:outline-none"
 					value={newMessageText}
 					onChange={async e => {
 						const text = e.target.value
 						setNewMessageText(text)
+						e.target.style.height = 'auto'
+						e.target.style.height = `${e.target.scrollHeight}px`
+					}}
+					onKeyDown={e => {
+						if (e.key === 'Enter' && !e.shiftKey) {
+							e.preventDefault()
+							e.target.form.requestSubmit()
+						}
 					}}
 					placeholder="Message..."
+					rows={1}
 				/>
 				<button
-					className="envoyer w-12 h-12 border-0 rounded-md absolute right-12 top-1/2 transform -translate-y-1/2 text-white text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center"
+					className="envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-white text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center"
 					type="submit"
 					disabled={!newMessageText}
 				></button>
