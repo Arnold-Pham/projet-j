@@ -8,7 +8,24 @@ export default function Tchat() {
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const [newMessageText, setNewMessageText] = useState('')
 	const sendMessage = useMutation(api.myFunctions.sendMessage)
+	const deleteMessage = useMutation(api.myFunctions.deleteMessage)
 	const messages = useQuery(api.myFunctions.listMessages, { id: user.id })
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null)
+
+	const handleClickOutside = () => {
+		setContextMenu(null)
+	}
+
+	document.addEventListener('contextmenu', e => {
+		e.preventDefault()
+	})
+
+	useEffect(() => {
+		document.addEventListener('click', handleClickOutside)
+		return () => {
+			document.removeEventListener('click', handleClickOutside)
+		}
+	}, [])
 
 	useEffect(() => {
 		if (messagesEndRef.current) {
@@ -16,13 +33,25 @@ export default function Tchat() {
 		}
 	}, [messages])
 
+	const handleDeleteMessage = async (messageId: string) => {
+		await deleteMessage({ id: messageId })
+		setContextMenu(null)
+	}
+
 	return (
 		<div className="tchat overflow-hidden overflow-y-scroll pb-4">
 			{messages?.map(message =>
 				message.authorId === user.id ? (
 					<div key={message._id} className="max-w-tchat ml-auto flex flex-col items-end mb-2">
 						<div className="text-right px-2">{message.author}</div>
-						<p className="mt-1 bg-primary text-black px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex">{message.content}</p>
+						<p
+							className="mt-1 bg-primary text-black px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex"
+							onContextMenu={e => {
+								setContextMenu({ x: e.pageX, y: e.pageY, messageId: message._id })
+							}}
+						>
+							{message.content}
+						</p>
 					</div>
 				) : (
 					<div key={message._id} className="max-w-tchat mr-auto flex flex-col items-start mb-2">
@@ -32,6 +61,18 @@ export default function Tchat() {
 				)
 			)}
 			<div ref={messagesEndRef} />
+
+			{contextMenu && (
+				<ul className="absolute bg-white shadow-lg border rounded-lg z-50" style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}>
+					<li className="px-2 py-1 text-sm cursor-pointer text-black" onClick={() => console.log(contextMenu.messageId)}>
+						Modifier
+					</li>
+					<li className="px-2 py-1 text-sm cursor-pointer text-black" onClick={() => handleDeleteMessage(contextMenu.messageId)}>
+						Supprimer
+					</li>
+				</ul>
+			)}
+
 			<form
 				className="fixed bottom-0 inset-x-0 bg-back container p-2 px-8"
 				onSubmit={async e => {

@@ -4,9 +4,9 @@ import { ConvexReactClient } from 'convex/react'
 import { ErrorBoundary } from './ErrorBoundary'
 import { ThemeProvider } from 'next-themes'
 import ReactDOM from 'react-dom/client'
-import './index.css'
 import React from 'react'
 import App from './App'
+import './index.css'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 

@@ -21,7 +21,7 @@ export const listMessages = query({
 	handler: async (ctx, args) => {
 		const messages = await ctx.db
 			.query('message')
-			.filter(q => q.eq(q.field('authorId'), args.id))
+			// .filter(q => q.eq(q.field('authorId'), args.id))
 			.order('desc')
 			.take(100)
 		return messages.reverse()
@@ -31,6 +31,14 @@ export const listMessages = query({
 // Update
 
 // Delete
+export const deleteMessage = mutation({
+	args: {
+		id: v.id('message')
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.delete(args.id)
+	}
+})
 
 export const listAllMessage = query({
 	args: {},
