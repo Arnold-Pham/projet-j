@@ -29,6 +29,15 @@ export const listMessages = query({
 })
 
 // Update
+export const updateMessage = mutation({
+	args: {
+		id: v.id('message'),
+		content: v.string()
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.patch(args.id, { content: args.content })
+	}
+})
 
 // Delete
 export const deleteMessage = mutation({
