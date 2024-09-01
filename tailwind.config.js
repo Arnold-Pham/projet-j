@@ -12,16 +12,12 @@ module.exports = {
 		},
 		extend: {
 			colors: {
-				white: 'var(--white)',
-				black: 'var(--black)',
-				border: 'var(--border)',
-				input: 'var(--input)',
-				background: 'var(--background)',
-				foreground: 'var(--foreground)',
-				primary: 'var(--primary)',
-				secondary: 'var(--secondary)',
-				muted: 'var(--muted)',
-				back: 'var(--back)'
+				background: 'var(--background-color)',
+				text: 'var(--text-color)',
+				'chat-sent': 'var(--chat-sent-background)',
+				'chat-received': 'var(--chat-received-background)',
+				'chat-sent-text': 'var(--chat-sent-text-color)',
+				'chat-received-text': 'var(--chat-received-text-color)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
