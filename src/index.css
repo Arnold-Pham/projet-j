@@ -28,14 +28,17 @@
 		--chat-received-text-color: #dcdcdc;
 	}
 }
+
 body {
 	background-color: var(--background-color);
 	color: var(--text-color);
 }
+
 * {
 	overflow: -moz-scrollbars-none;
 	scrollbar-width: none;
 }
+
 .tchat {
 	max-height: calc(100vh - 136px);
 }

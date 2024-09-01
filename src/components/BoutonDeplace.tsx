@@ -43,13 +43,13 @@ export default function BoutonDeplace() {
 	return (
 		<>
 			<div
-				className="cursor-pointer flex items-center justify-center text-white fixed select-none"
+				className="cursor-pointer flex items-center justify-center fixed select-none"
 				style={{ top: `${position.y}px`, left: `${position.x}px` }}
 				onMouseDown={handleMouseDown}
 				onDragStart={e => e.preventDefault()}
 				tabIndex={1000}
 			>
-				<button className="w-8 h-8 rounded-full bg-primary"></button>
+				<button className="w-8 h-8 rounded-full bg-chat-sent"></button>
 			</div>
 		</>
 	)

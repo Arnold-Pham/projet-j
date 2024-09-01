@@ -3,6 +3,31 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 
+/**
+ * Tout le style de la page
+ */
+const style = {
+	tchat: 'overflow-hidden overflow-y-scroll pb-4',
+
+	bulleLeft: 'max-w-tchat mr-auto flex flex-col items-start mb-2',
+	nomLeft: 'px-2 text-text',
+	msgLeft: 'mt-1 bg-chat-sent text-chat-sent-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
+	msgEdit:
+		'w-full h-auto min-h-5 p-4 rounded-tl-lg rounded-tr-lg px-4 py-3 mt-1 rounded-br-lg bg-chat-sent text-chat-sent-text resize-none overflow-scroll focus:outline-none',
+
+	bulleRight: 'max-w-tchat ml-auto flex flex-col items-end mb-2',
+	nomRight: 'text-right px-2 text-text',
+	msgRight: 'mt-1 bg-chat-received text-chat-received-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
+
+	menu: 'absolute bg-white shadow-lg border rounded-lg z-50',
+	plat: 'px-2 py-1 text-sm cursor-pointer text-black',
+
+	tchatForm: 'fixed bottom-0 inset-x-0 bg-background container p-2 px-8',
+	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-chat-received text-chat-received-text resize-none overflow-scroll focus:outline-none',
+	tchatSend:
+		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
+}
+
 export default function Tchat() {
 	const { user } = useUser() // Récupère User connecté
 	const [edit, setEdit] = useState('') // ID message à éditer
@@ -239,30 +264,4 @@ export default function Tchat() {
 			</form>
 		</div>
 	)
-}
-
-/**
- * Tout le style de la page
- */
-const style = {
-	tchat: 'overflow-hidden overflow-y-scroll pb-4',
-
-	bulleLeft: 'max-w-tchat mr-auto flex flex-col items-start mb-2',
-	nomLeft: 'px-2 text-text',
-	msgLeft: 'mt-1 bg-chat-sent text-chat-sent-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
-
-	msgEdit:
-		'w-full h-auto max-h-64 min-h-5 p-4 rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-primary text-background resize-none overflow-scroll focus:outline-none',
-
-	bulleRight: 'max-w-tchat ml-auto flex flex-col items-end mb-2',
-	nomRight: 'text-right px-2 text-text',
-	msgRight: 'mt-1 bg-chat-received text-chat-received-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
-
-	menu: 'absolute bg-white shadow-lg border rounded-lg z-50',
-	plat: 'px-2 py-1 text-sm cursor-pointer text-black',
-
-	tchatForm: 'fixed bottom-0 inset-x-0 bg-background container p-2 px-8',
-	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-chat-received text-chat-received-text resize-none overflow-scroll focus:outline-none',
-	tchatSend:
-		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
 }

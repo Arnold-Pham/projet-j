@@ -24,7 +24,11 @@ const runCommand = async (command, successMessage, errorMessage) => {
 
 const run = async () => {
 	try {
-		await runCommand('prettier --write .', 'Fichiers formatés avec Prettier.', 'Erreur lors du formatage avec Prettier.')
+		await runCommand(
+			'prettier --write --trailing-comma none --arrow-parens avoid --bracket-spacing --end-of-line crlf --single-quote --print-width 150 --use-tabs --tab-width 4 --no-semi .',
+			'Fichiers formatés avec Prettier.',
+			'Erreur lors du formatage avec Prettier.'
+		)
 		await runCommand('git add .', 'Fichiers ajoutés.', "Erreur lors de l'ajout des fichiers.")
 		await runCommand(`git commit -m "${commitMessage}"`, 'Commit effectué.', 'Erreur lors du commit.')
 	} catch (error) {
