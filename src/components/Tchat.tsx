@@ -179,25 +179,32 @@ export default function Tchat() {
 			{/* Affichage messages */}
 			{messages?.map(message =>
 				message.authorId === user.id ? (
-					<div key={message._id} className={style.bulleRight}>
-						<div className={style.nomRight}>{message.author}</div>
+					<div key={message._id} className={style.bulleLeft}>
+						<div className={style.nomLeft}>{message.author}</div>
 
 						{/* Affichage editeur ou message normal */}
 						{edit === message._id ? (
 							<form className="w-full" onSubmit={e => handleEditSubmit(e, message._id)}>
-								<textarea ref={editMsgRef} className={style.msgEdit} value={editMsgText} onChange={e => setEditMsgText(e.target.value)} onKeyDown={handleEditClavier} rows={1} />
+								<textarea
+									ref={editMsgRef}
+									className={style.msgEdit}
+									value={editMsgText}
+									onChange={e => setEditMsgText(e.target.value)}
+									onKeyDown={handleEditClavier}
+									rows={1}
+								/>
 								<button type="submit" hidden></button>
 							</form>
 						) : (
-							<p className={style.msgRight} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
+							<p className={style.msgLeft} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
 								{message.content}
 							</p>
 						)}
 					</div>
 				) : (
-					<div key={message._id} className={style.bulleLeft}>
-						<div className={style.nomLeft}>{message.author}</div>
-						<p className={style.msgLeft}>{message.content}</p>
+					<div key={message._id} className={style.bulleRight}>
+						<div className={style.nomRight}>{message.author}</div>
+						<p className={style.msgRight}>{message.content}</p>
 					</div>
 				)
 			)}
@@ -241,20 +248,21 @@ const style = {
 	tchat: 'overflow-hidden overflow-y-scroll pb-4',
 
 	bulleLeft: 'max-w-tchat mr-auto flex flex-col items-start mb-2',
-	nomLeft: 'px-2',
-	msgLeft: 'mt-1 bg-foreground text-background px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
+	nomLeft: 'px-2 text-text',
+	msgLeft: 'mt-1 bg-chat-sent text-chat-sent-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
 
-	msgEdit: 'w-full h-auto max-h-64 min-h-5 p-4 rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-primary text-background resize-none overflow-scroll focus:outline-none',
+	msgEdit:
+		'w-full h-auto max-h-64 min-h-5 p-4 rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-primary text-background resize-none overflow-scroll focus:outline-none',
 
 	bulleRight: 'max-w-tchat ml-auto flex flex-col items-end mb-2',
-	nomRight: 'text-right px-2',
-	msgRight: 'mt-1 bg-primary text-black px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
+	nomRight: 'text-right px-2 text-text',
+	msgRight: 'mt-1 bg-chat-received text-chat-received-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
 
 	menu: 'absolute bg-white shadow-lg border rounded-lg z-50',
 	plat: 'px-2 py-1 text-sm cursor-pointer text-black',
 
-	tchatForm: 'fixed bottom-0 inset-x-0 bg-back container p-2 px-8',
-	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-foreground text-background resize-none overflow-scroll focus:outline-none',
+	tchatForm: 'fixed bottom-0 inset-x-0 bg-background container p-2 px-8',
+	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-chat-received text-chat-received-text resize-none overflow-scroll focus:outline-none',
 	tchatSend:
-		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-white text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
+		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
 }
