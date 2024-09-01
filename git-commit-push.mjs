@@ -27,7 +27,6 @@ const run = async () => {
 		await runCommand('prettier --write .', 'Fichiers formatés avec Prettier.', 'Erreur lors du formatage avec Prettier.')
 		await runCommand('git add .', 'Fichiers ajoutés.', "Erreur lors de l'ajout des fichiers.")
 		await runCommand(`git commit -m "${commitMessage}"`, 'Commit effectué.', 'Erreur lors du commit.')
-		await runCommand('git push', 'Push effectué.', 'Erreur lors du push.')
 	} catch (error) {
 		process.exit(1)
 	}
