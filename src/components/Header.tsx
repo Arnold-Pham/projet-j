@@ -1,5 +1,4 @@
 import { SignInButton, UserButton } from '@clerk/clerk-react'
-import { ThemeToggle } from './ThemeToggle'
 import { Authenticated, Unauthenticated } from 'convex/react'
 import img from '../images/Shutdown.svg'
 
@@ -8,7 +7,7 @@ export default function Header() {
 		<header className="h-16 container flex justify-between items-center">
 			<h1 className="text-2xl font-bold">PROJET J</h1>
 			<div className="flex gap-3 items-center">
-				<ThemeToggle />
+				{/* Theme */}
 				<Authenticated>
 					<UserButton />
 				</Authenticated>

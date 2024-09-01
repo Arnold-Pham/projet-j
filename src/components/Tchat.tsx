@@ -3,193 +3,251 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 
+// Fonction principale du composant
 export default function Tchat() {
-	const { user } = useUser()
-	const [edit, setEdit] = useState('') // ID du message en cours d'édition
-	const messagesEndRef = useRef<HTMLDivElement>(null) // Réf pour le scroll vers la fin des messages
-	const editAreaRef = useRef<HTMLTextAreaElement>(null) // Réf pour le textarea en mode édition
-	const textAreaRef = useRef<HTMLTextAreaElement>(null) // Réf pour le textarea du nouveau message
-	const [newMessageText, setNewMessageText] = useState('') // Nouveau message texte
-	const [editMessageText, setEditMessageText] = useState('') // Contenu du message édité
-	const sendMessage = useMutation(api.myFunctions.sendMessage) // Fonction d'envoi de message
-	const deleteMessage = useMutation(api.myFunctions.deleteMessage) // Fonction de suppression de message
-	const updateMessage = useMutation(api.myFunctions.updateMessage) // Fonction de mise à jour du message
-	const messages = useQuery(api.myFunctions.listMessages, { id: user.id }) // Requête pour les messages
-	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Mise en place du menu clic droit
+	const { user } = useUser() // Récupère User connecté
+	const [edit, setEdit] = useState('') // ID message à éditer
+	const [newMsgText, setNewMsgText] = useState('') // Nouveau message texte
+	const [editMsgText, setEditMsgText] = useState('') // Contenu du message édité
+	const messages = useQuery(api.myFunctions.listMessages, { id: user.id }) // Requête 100 derniers messages
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Infos menu clic droit
 
-	// Gestion de la fermeture du menu contextuel
-	const handleClickOutside = () => {
-		setContextMenu(null)
-	}
+	// Balises références
+	const lastMsgRef = useRef<HTMLDivElement>(null)
+	const editMsgRef = useRef<HTMLTextAreaElement>(null)
+	const sendMsgRef = useRef<HTMLTextAreaElement>(null)
 
-	// Empêcher l'ouverture du menu contextuel natif du navigateur
-	document.addEventListener('contextmenu', e => {
-		e.preventDefault()
-	})
+	// Gère fonctions externes messages
+	const sendMessage = useMutation(api.myFunctions.sendMessage)
+	const deleteMessage = useMutation(api.myFunctions.deleteMessage)
+	const updateMessage = useMutation(api.myFunctions.updateMessage)
 
-	useEffect(() => {
-		document.addEventListener('click', handleClickOutside)
-		return () => {
-			document.removeEventListener('click', handleClickOutside)
-		}
-	}, [])
-
-	// Focus automatique et positionnement du curseur à la fin du texte lors de l'édition
-	useEffect(() => {
-		if (edit && editAreaRef.current) {
-			editAreaRef.current.focus()
-			const length = editAreaRef.current.value.length
-			editAreaRef.current.setSelectionRange(length, length) // Placer le curseur à la fin du texte
-		}
-	}, [edit])
-
-	// Scroll automatique vers le bas des messages lors de la mise à jour
-	useEffect(() => {
-		if (messagesEndRef.current) {
-			messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-		}
-	}, [messages])
-
-	// Ajuster dynamiquement la hauteur du textarea
-	const adjustTextAreaHeight = (textarea: HTMLTextAreaElement) => {
+	/**
+	 * Ajuste hauteur textarea
+	 * @param textarea
+	 */
+	const autoHeight = (textarea: HTMLTextAreaElement) => {
 		textarea.style.height = 'auto'
 		textarea.style.height = `${textarea.scrollHeight}px`
 	}
 
-	useEffect(() => {
-		if (editAreaRef.current) {
-			adjustTextAreaHeight(editAreaRef.current)
-		}
-	}, [editMessageText])
-
-	useEffect(() => {
-		if (textAreaRef.current) {
-			adjustTextAreaHeight(textAreaRef.current)
-		}
-	}, [newMessageText])
-
-	// Gestion de la suppression de message
+	/**
+	 * Supprime message
+	 * @param messageId ID message ciblé
+	 */
 	const handleDeleteMessage = async (messageId: string) => {
 		await deleteMessage({ id: messageId })
 		setContextMenu(null)
 	}
 
+	/**
+	 * Envoi message avec vérifications
+	 * @param e Évènements
+	 */
+	const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault()
+		if (newMsgText.trim() !== '') await sendMessage({ authorId: user.id, author: user.username, content: newMsgText.trim() })
+		setNewMsgText('')
+		autoHeight(sendMsgRef.current)
+	}
+
+	/**
+	 * Gère touche "Enter" envoi
+	 * @param e Évènements
+	 */
+	const handleSendClavier = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault()
+			e.currentTarget.form?.requestSubmit()
+		}
+	}
+
+	/**
+	 * Édition message avec vérifications / Supprime message si champ vide
+	 * @param e Évènements
+	 * @param messageId ID message ciblé
+	 */
+	const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>, messageId: string) => {
+		e.preventDefault()
+		const message = messages.find(msg => msg._id === messageId)
+		const trimmedText = editMsgText.trim()
+
+		if (trimmedText !== message.content && trimmedText !== '') {
+			await updateMessage({ id: messageId, content: trimmedText })
+		} else if (trimmedText === '') {
+			await handleDeleteMessage(messageId)
+		}
+		setEditMsgText('')
+		setEdit('')
+	}
+
+	/**
+	 * Gère touche "Enter" et "Échap" edit
+	 * @param e Évènements
+	 */
+	const handleEditClavier = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault()
+			e.currentTarget.form?.requestSubmit()
+		} else if (e.key === 'Escape') {
+			e.preventDefault()
+			setEditMsgText('')
+			setEdit('')
+		}
+	}
+
+	/**
+	 * Crée menu clic droit
+	 * @param e Évènements
+	 */
+	const handleMessageContextMenu = (e: React.MouseEvent<HTMLParagraphElement>) => {
+		e.preventDefault()
+		setContextMenu({ x: e.pageX, y: e.pageY, messageId: e.currentTarget.dataset.messageId || '' })
+	}
+
+	/**
+	 * Gère éléments menu clic droit
+	 * @param action "edit" | "delete"
+	 */
+	const handleMenuItemClick = (action: 'edit' | 'delete') => {
+		if (contextMenu) {
+			if (action === 'edit') {
+				setEdit(contextMenu.messageId)
+				const messageToEdit = messages.find(msg => msg._id === contextMenu.messageId)
+				if (messageToEdit) setEditMsgText(messageToEdit.content)
+			} else if (action === 'delete') {
+				handleDeleteMessage(contextMenu.messageId)
+			}
+			setContextMenu(null)
+		}
+	}
+
+	/**
+	 * Gère fermeture menu clic droit
+	 */
+	useEffect(() => {
+		document.addEventListener('contextmenu', e => e.preventDefault())
+		document.addEventListener('click', () => setContextMenu(null))
+		return () => {
+			document.removeEventListener('contextmenu', e => e.preventDefault())
+			document.addEventListener('click', () => setContextMenu(null))
+		}
+	}, [])
+
+	/**
+	 * Focus zone edit
+	 */
+	useEffect(() => {
+		if (edit && editMsgRef.current) {
+			const textarea = editMsgRef.current
+			textarea.focus()
+			textarea.setSelectionRange(textarea.value.length, textarea.value.length)
+			autoHeight(textarea)
+
+			const rect = textarea.getBoundingClientRect()
+			const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight
+
+			if (!isInView) textarea.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+		}
+	}, [edit])
+
+	/**
+	 * Scroll vers nouveau message
+	 */
+	useEffect(() => {
+		if (lastMsgRef.current) {
+			lastMsgRef.current.scrollIntoView({ behavior: 'smooth' })
+		}
+	}, [messages])
+
+	/**
+	 * Ajuste hauteur champ envoi
+	 */
+	useEffect(() => {
+		if (sendMsgRef.current) autoHeight(sendMsgRef.current)
+	}, [newMsgText])
+
+	/**
+	 * Ajuste hauteur champ edit
+	 */
+	useEffect(() => {
+		if (editMsgRef.current) autoHeight(editMsgRef.current)
+	}, [editMsgText])
+
+	// Rendu du composant
 	return (
-		<div className="tchat overflow-hidden overflow-y-scroll pb-4">
+		<div className={`tchat ${style.tchat}`}>
 			{messages?.map(message =>
 				message.authorId === user.id ? (
-					<div key={message._id} className="max-w-tchat ml-auto flex flex-col items-end mb-2">
-						<div className="text-right px-2">{message.author}</div>
+					<div key={message._id} className={style.bulleRight}>
+						<div className={style.nomRight}>{message.author}</div>
 						{edit === message._id ? (
-							// Mode édition
-							<form
-								className="w-full"
-								onSubmit={async e => {
-									e.preventDefault()
-									if (editMessageText.trim() === message.content) {
-										setEdit('')
-									} else if (editMessageText.trim() === '' && editMessageText.trim() !== message.content) {
-										handleDeleteMessage(message._id)
-									} else {
-										await updateMessage({ id: message._id, content: editMessageText.trim() })
-										setEditMessageText('')
-										setEdit('')
-									}
-								}}
-							>
-								<textarea
-									ref={editAreaRef} // Référence pour le focus
-									className="w-full h-auto max-h-64 min-h-5 p-4 rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-primary text-background resize-none overflow-scroll focus:outline-none"
-									value={editMessageText}
-									onChange={e => {
-										setEditMessageText(e.target.value)
-									}}
-									onKeyDown={e => {
-										if (e.key === 'Enter' && !e.shiftKey) {
-											e.preventDefault()
-											e.target.form.requestSubmit()
-										} else if (e.key === 'Escape') {
-											setEditMessageText('') // Annuler la modification
-											setEdit('')
-										}
-									}}
-									rows={1}
-								/>
+							<form className="w-full" onSubmit={e => handleEditSubmit(e, message._id)}>
+								<textarea ref={editMsgRef} className={style.msgEdit} value={editMsgText} onChange={e => setEditMsgText(e.target.value)} onKeyDown={handleEditClavier} rows={1} />
 								<button type="submit" hidden></button>
 							</form>
 						) : (
-							// Affichage normal du message
-							<p
-								className="mt-1 bg-primary text-black px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex"
-								onContextMenu={e => {
-									setContextMenu({ x: e.pageX, y: e.pageY, messageId: message._id })
-								}}
-							>
+							<p className={style.msgRight} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
 								{message.content}
 							</p>
 						)}
 					</div>
 				) : (
-					// Messages d'autres utilisateurs
-					<div key={message._id} className="max-w-tchat mr-auto flex flex-col items-start mb-2">
-						<div className="px-2">{message.author}</div>
-						<p className="mt-1 bg-foreground text-background px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg">{message.content}</p>
+					<div key={message._id} className={style.bulleLeft}>
+						<div className={style.nomLeft}>{message.author}</div>
+						<p className={style.msgLeft}>{message.content}</p>
 					</div>
 				)
 			)}
-			<div ref={messagesEndRef} />
 
-			{/* Menu contextuel pour modifier ou supprimer un message */}
+			<div ref={lastMsgRef} />
+
 			{contextMenu && (
-				<ul className="absolute bg-white shadow-lg border rounded-lg z-50" style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}>
-					<li
-						className="px-2 py-1 text-sm cursor-pointer text-black"
-						onClick={() => {
-							setEdit(contextMenu.messageId)
-							const messageToEdit = messages.find(msg => msg._id === contextMenu.messageId)
-							if (messageToEdit) {
-								setEditMessageText(messageToEdit.content)
-							}
-						}}
-					>
+				<ul className={style.menu} style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}>
+					<li className={style.plat} onClick={() => handleMenuItemClick('edit')}>
 						Modifier
 					</li>
-					<li className="px-2 py-1 text-sm cursor-pointer text-black" onClick={() => handleDeleteMessage(contextMenu.messageId)}>
+					<li className={style.plat} onClick={() => handleMenuItemClick('delete')}>
 						Supprimer
 					</li>
 				</ul>
 			)}
 
-			{/* Formulaire pour envoyer un nouveau message */}
-			<form
-				className="fixed bottom-0 inset-x-0 bg-back container p-2 px-8"
-				onSubmit={async e => {
-					e.preventDefault()
-					await sendMessage({ authorId: user.id, author: user.username, content: newMessageText.trim() })
-					setNewMessageText('')
-					textAreaRef.current.style.height = 'auto'
-				}}
-			>
+			<form className={style.tchatForm} onSubmit={handleSendMessage}>
 				<textarea
-					ref={textAreaRef}
-					className="w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-foreground text-background resize-none overflow-scroll focus:outline-none"
-					value={newMessageText}
-					onChange={e => setNewMessageText(e.target.value)}
-					onKeyDown={e => {
-						if (e.key === 'Enter' && !e.shiftKey) {
-							e.preventDefault()
-							e.target.form.requestSubmit()
-						}
-					}}
+					ref={sendMsgRef}
+					className={style.tchatInput}
+					value={newMsgText}
+					onChange={e => setNewMsgText(e.target.value)}
+					onKeyDown={handleSendClavier}
 					placeholder="Message..."
 					rows={1}
 				/>
-				<button
-					className="envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-white text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center"
-					type="submit"
-					disabled={!newMessageText.trim()}
-				></button>
+				<button className={style.tchatSend} type="submit" disabled={!newMsgText.trim()}></button>
 			</form>
 		</div>
 	)
+}
+
+// Définition des styles en objet
+const style = {
+	tchat: 'overflow-hidden overflow-y-scroll pb-4',
+
+	bulleLeft: 'max-w-tchat mr-auto flex flex-col items-start mb-2',
+	nomLeft: 'px-2',
+	msgLeft: 'mt-1 bg-foreground text-background px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
+
+	msgEdit: 'w-full h-auto max-h-64 min-h-5 p-4 rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-primary text-background resize-none overflow-scroll focus:outline-none',
+
+	bulleRight: 'max-w-tchat ml-auto flex flex-col items-end mb-2',
+	nomRight: 'text-right px-2',
+	msgRight: 'mt-1 bg-primary text-black px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
+
+	menu: 'absolute bg-white shadow-lg border rounded-lg z-50',
+	plat: 'px-2 py-1 text-sm cursor-pointer text-black',
+
+	tchatForm: 'fixed bottom-0 inset-x-0 bg-back container p-2 px-8',
+	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-foreground text-background resize-none overflow-scroll focus:outline-none',
+	tchatSend:
+		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-white text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
 }
