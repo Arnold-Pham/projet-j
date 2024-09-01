@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 
-// Fonction principale du composant
 export default function Tchat() {
 	const { user } = useUser() // Récupère User connecté
 	const [edit, setEdit] = useState('') // ID message à éditer
@@ -177,10 +176,13 @@ export default function Tchat() {
 	// Rendu du composant
 	return (
 		<div className={`tchat ${style.tchat}`}>
+			{/* Affichage messages */}
 			{messages?.map(message =>
 				message.authorId === user.id ? (
 					<div key={message._id} className={style.bulleRight}>
 						<div className={style.nomRight}>{message.author}</div>
+
+						{/* Affichage editeur ou message normal */}
 						{edit === message._id ? (
 							<form className="w-full" onSubmit={e => handleEditSubmit(e, message._id)}>
 								<textarea ref={editMsgRef} className={style.msgEdit} value={editMsgText} onChange={e => setEditMsgText(e.target.value)} onKeyDown={handleEditClavier} rows={1} />
@@ -200,8 +202,10 @@ export default function Tchat() {
 				)
 			)}
 
+			{/* Ref pour descendre au dernier message envoyé/reçu */}
 			<div ref={lastMsgRef} />
 
+			{/* Menu clic droit */}
 			{contextMenu && (
 				<ul className={style.menu} style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}>
 					<li className={style.plat} onClick={() => handleMenuItemClick('edit')}>
@@ -213,6 +217,7 @@ export default function Tchat() {
 				</ul>
 			)}
 
+			{/* Formulaire d'envoi de messages */}
 			<form className={style.tchatForm} onSubmit={handleSendMessage}>
 				<textarea
 					ref={sendMsgRef}
@@ -229,7 +234,9 @@ export default function Tchat() {
 	)
 }
 
-// Définition des styles en objet
+/**
+ * Tout le style de la page
+ */
 const style = {
 	tchat: 'overflow-hidden overflow-y-scroll pb-4',
 
