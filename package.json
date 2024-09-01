@@ -10,7 +10,8 @@
 		"predev": "convex dev --until-success && convex dashboard",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"prettier": "npx prettier --write --trailing-comma none --arrow-parens avoid --bracket-spacing --end-of-line crlf --single-quote --print-width 200 --use-tabs --tab-width 4 --no-semi ."
+		"prettier": "npx prettier --write --trailing-comma none --arrow-parens avoid --bracket-spacing --end-of-line crlf --single-quote --print-width 200 --use-tabs --tab-width 4 --no-semi .",
+		"git": "node git-commit-push.mjs"
 	},
 	"dependencies": {
 		"@clerk/clerk-react": "^4.25.2",
