@@ -1,7 +1,7 @@
 {
 	"name": "projet-j",
 	"private": true,
-	"version": "0.1.0",
+	"version": "0.1.1a",
 	"type": "module",
 	"scripts": {
 		"dev": "npm-run-all --parallel dev:frontend dev:backend",
@@ -9,7 +9,6 @@
 		"dev:backend": "convex dev",
 		"predev": "convex dev --until-success && convex dashboard",
 		"build": "tsc && vite build",
-		"lint": "tsc && eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
 		"preview": "vite preview",
 		"prettier": "npx prettier --write --trailing-comma none --arrow-parens avoid --bracket-spacing --end-of-line crlf --single-quote --print-width 200 --use-tabs --tab-width 4 --no-semi ."
 	},

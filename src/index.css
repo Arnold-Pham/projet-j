@@ -2,6 +2,10 @@
 @tailwind utilities;
 @tailwind base;
 
+:focus {
+	outline: none;
+}
+
 @layer base {
 	:root {
 		--white: #ffffff;
