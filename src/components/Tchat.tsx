@@ -222,14 +222,14 @@ export default function Tchat() {
 							</form>
 						) : (
 							<p className={style.msgLeft} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
-								{message.content}
+								{message.content}<span className='span-date'><br></br>{message._creationTime}</span>
 							</p>
 						)}
 					</div>
 				) : (
 					<div key={message._id} className={style.bulleRight}>
 						<div className={style.nomRight}>{message.author}</div>
-						<p className={style.msgRight}>{message.content}</p>
+						<p className={style.msgRight}>{message.content}<span className='span-date'>{message._creationTime}</span></p>
 					</div>
 				)
 			)}
