@@ -2,30 +2,39 @@ import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
+import formaterDate from './FormaterDate'
 
-/**
- * Tout le style de la page
- */
+// Tout le style de la page
 const style = {
-	tchat: 'overflow-hidden overflow-y-scroll pb-4',
+	// Conteneur de chat
+	tchat: 'overflow-hidden overflow-y-scroll pb-4 max-h-screen',
 
-	bulleLeft: 'max-w-tchat mr-auto flex flex-col items-start mb-2',
-	nomLeft: 'px-2 text-text',
-	msgLeft: 'mt-1 bg-chat-sent text-chat-sent-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg',
-	msgEdit:
-		'w-full h-auto min-h-5 p-4 rounded-tl-lg rounded-tr-lg px-4 py-3 mt-1 rounded-br-lg bg-chat-sent text-chat-sent-text resize-none overflow-scroll focus:outline-none',
+	// Bulles de message envoyées (utilisateur)
+	divL: 'flex flex-col items-start mb-1 max-w-tchat mr-auto w-full',
+	nomL: 'px-2 my-1 text-sm text-text',
+	bubL: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text text-justify',
 
-	bulleRight: 'max-w-tchat ml-auto flex flex-col items-end mb-2',
-	nomRight: 'text-right px-2 text-text',
-	msgRight: 'mt-1 bg-chat-received text-chat-received-text px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-bl-lg flex',
+	// Bulles de message reçues (autres utilisateurs)
+	divR: 'flex flex-col items-end mb-1 max-w-tchat ml-auto w-full',
+	nomR: 'px-2 my-1 text-sm text-text text-right',
+	bubR: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-chat-received text-chat-received-text text-justify',
 
-	menu: 'absolute bg-white shadow-lg border rounded-lg z-50',
-	plat: 'px-2 py-1 text-sm cursor-pointer text-black',
+	// Message en cours d'édition
+	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
+	msgE: 'bg-chat-sent text-chat-sent-text text-justify rounded-tl-lg rounded-tr-lg rounded-br-lg resize-none overflow-auto focus:outline-none',
 
-	tchatForm: 'fixed bottom-0 inset-x-0 bg-background container p-2 px-8',
+	// Date des messages
+	date: 'text-xs mt-1 text-right',
+
+	// Menu contextuel
+	menu: 'absolute z-50 px-2 py-1 bg-white shadow-lg border rounded-lg',
+	plat: 'text-sm cursor-pointer text-black',
+
+	// Formulaire de chat
+	tchatForm: 'fixed bottom-0 inset-x-0 p-2 px-8 bg-background container',
 	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-chat-received text-chat-received-text resize-none overflow-scroll focus:outline-none',
 	tchatSend:
-		'envoyer w-12 h-12 border-0 rounded-md absolute right-12 -bottom-3 transform -translate-y-1/2 text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
+		'envoyer w-12 h-12 absolute right-12 -bottom-3 transform -translate-y-1/2 border-0 rounded-md text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
 }
 
 export default function Tchat() {
@@ -146,9 +155,7 @@ export default function Tchat() {
 		}
 	}
 
-	/**
-	 * Gère fermeture menu clic droit
-	 */
+	// Gère fermeture menu clic droit
 	useEffect(() => {
 		document.addEventListener('contextmenu', e => e.preventDefault())
 		document.addEventListener('click', () => setContextMenu(null))
@@ -158,9 +165,7 @@ export default function Tchat() {
 		}
 	}, [])
 
-	/**
-	 * Focus zone edit
-	 */
+	// Focus zone edit
 	useEffect(() => {
 		if (edit && editMsgRef.current) {
 			const textarea = editMsgRef.current
@@ -175,25 +180,19 @@ export default function Tchat() {
 		}
 	}, [edit])
 
-	/**
-	 * Scroll vers nouveau message
-	 */
+	// Scroll vers nouveau message
 	useEffect(() => {
 		if (lastMsgRef.current) {
 			lastMsgRef.current.scrollIntoView({ behavior: 'smooth' })
 		}
 	}, [messages])
 
-	/**
-	 * Ajuste hauteur champ envoi
-	 */
+	// Ajuste hauteur champ envoi
 	useEffect(() => {
 		if (sendMsgRef.current) autoHeight(sendMsgRef.current)
 	}, [newMsgText])
 
-	/**
-	 * Ajuste hauteur champ edit
-	 */
+	//Ajuste hauteur champ edit
 	useEffect(() => {
 		if (editMsgRef.current) autoHeight(editMsgRef.current)
 	}, [editMsgText])
@@ -201,35 +200,40 @@ export default function Tchat() {
 	// Rendu du composant
 	return (
 		<div className={`tchat ${style.tchat}`}>
-			{/* Affichage messages */}
+			{/* Affichage des messages */}
 			{messages?.map(message =>
 				message.authorId === user.id ? (
-					<div key={message._id} className={style.bulleLeft}>
-						<div className={style.nomLeft}>{message.author}</div>
+					<div key={message._id} className={style.divL}>
+						<p className={style.nomL}>{message.author}</p>
 
-						{/* Affichage editeur ou message normal */}
+						{/* Message éditable ou normal */}
 						{edit === message._id ? (
-							<form className="w-full" onSubmit={e => handleEditSubmit(e, message._id)}>
+							<form className={style.bubE} onSubmit={e => handleEditSubmit(e, message._id)}>
 								<textarea
-									ref={editMsgRef}
-									className={style.msgEdit}
-									value={editMsgText}
-									onChange={e => setEditMsgText(e.target.value)}
-									onKeyDown={handleEditClavier}
 									rows={1}
+									ref={editMsgRef}
+									value={editMsgText}
+									className={style.msgE}
+									onKeyDown={handleEditClavier}
+									onChange={e => setEditMsgText(e.target.value)}
 								/>
+								<p className={style.date}>{formaterDate(message._creationTime)}</p>
 								<button type="submit" hidden></button>
 							</form>
 						) : (
-							<p className={style.msgLeft} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
-								{message.content}
-							</p>
+							<div className={style.bubL} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
+								<p>{message.content}</p>
+								<p className={style.date}>{formaterDate(message._creationTime)}</p>
+							</div>
 						)}
 					</div>
 				) : (
-					<div key={message._id} className={style.bulleRight}>
-						<div className={style.nomRight}>{message.author}</div>
-						<p className={style.msgRight}>{message.content}</p>
+					<div key={message._id} className={style.divR}>
+						<p className={style.nomR}>{message.author}</p>
+						<div className={style.bubR}>
+							<p>{message.content}</p>
+							<p className={style.date}>{formaterDate(message._creationTime)}</p>
+						</div>
 					</div>
 				)
 			)}
@@ -252,13 +256,13 @@ export default function Tchat() {
 			{/* Formulaire d'envoi de messages */}
 			<form className={style.tchatForm} onSubmit={handleSendMessage}>
 				<textarea
-					ref={sendMsgRef}
-					className={style.tchatInput}
-					value={newMsgText}
-					onChange={e => setNewMsgText(e.target.value)}
-					onKeyDown={handleSendClavier}
-					placeholder="Message..."
 					rows={1}
+					ref={sendMsgRef}
+					value={newMsgText}
+					placeholder="Message..."
+					className={style.tchatInput}
+					onKeyDown={handleSendClavier}
+					onChange={e => setNewMsgText(e.target.value)}
 				/>
 				<button className={style.tchatSend} type="submit" disabled={!newMsgText.trim()}></button>
 			</form>

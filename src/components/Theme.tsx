@@ -15,9 +15,7 @@ export default function Theme() {
 		localStorage.setItem(THEME_KEY, theme)
 	}, [theme])
 
-	const handleThemeChange = newTheme => {
-		setTheme(newTheme)
-	}
+	const handleThemeChange = newTheme => setTheme(newTheme)
 
 	return (
 		<>
