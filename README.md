@@ -23,13 +23,21 @@ npm install
 Démarrer le serveur local
 
 ```
-npm install
+npm run dev
+```
+
+Faire un commit
+
+```
+npm run git -- "Commentaire"
 ```
 
 ## III. Fonctions présentes
 
 -   Création d'une compte personnel
--   Envoyer des messages à soi même (:
+-   Envoyer des messages (dans un seul tchat partagé)
+-   Modifier ses messages
+-   Supprimer ses messages
 
 ## IV. Les membres de la Collaboration
 
