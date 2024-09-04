@@ -3,44 +3,9 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 import formaterDate from './FormaterDate'
+import style from './styles/tchatStyle'
 
-// Tout le style de la page
-const style = {
-	// Conteneur de chat
-	tchat: 'overflow-hidden overflow-y-scroll pb-4 max-h-screen',
-
-	// Bulles de message envoyées (utilisateur)
-	divL: 'flex flex-col items-start mb-1 max-w-tchat mr-auto w-full',
-	nomL: 'px-2 my-1 text-sm text-text',
-	bubL: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text text-justify',
-	bubL2: 'px-4 py-3 max-w-full rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text text-justify',
-
-	// Bulles de message reçues (autres utilisateurs)
-	divR: 'flex flex-col items-end mb-1 max-w-tchat ml-auto w-full',
-	nomR: 'px-2 my-1 text-sm text-text text-right',
-	bubR: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-chat-received text-chat-received-text text-justify',
-	bubR2: 'px-4 py-3 max-w-full rounded-tl-lg rounded-bl-lg bg-chat-received text-chat-received-text text-justify',
-
-	// Message en cours d'édition
-	msgE: 'bg-chat-sent text-chat-sent-text text-justify rounded-tl-lg rounded-tr-lg rounded-br-lg resize-none overflow-auto focus:outline-none',
-	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
-	bubE2: 'flex flex-col w-full px-4 py-3 rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
-
-	// Date des messages
-	date: 'text-xs mt-1 text-right',
-
-	// Menu contextuel
-	menu: 'absolute z-50 px-2 py-1 bg-white shadow-lg border rounded-lg',
-	plat: 'text-sm cursor-pointer text-black',
-
-	// Formulaire de chat
-	tchatForm: 'fixed bottom-0 inset-x-0 p-2 px-8 bg-background container',
-	tchatInput: 'w-full h-auto max-h-64 p-4 pr-20 rounded-lg bg-chat-received text-chat-received-text resize-none overflow-scroll focus:outline-none',
-	tchatSend:
-		'envoyer w-12 h-12 absolute right-12 -bottom-3 transform -translate-y-1/2 border-0 rounded-md text-transparent transition-opacity duration-150 ease-in-out bg-no-repeat bg-center'
-}
-
-export default function Tchat() {
+export default function Tchat_old() {
 	const { user } = useUser() // Récupère User connecté
 	const [edit, setEdit] = useState('') // ID message à éditer
 	const [newMsgText, setNewMsgText] = useState('') // Nouveau message texte
@@ -213,7 +178,10 @@ export default function Tchat() {
 						{!isSameAuthorAsPrev && <p className={style.nomL}>{message.author}</p>}
 
 						{edit === message._id ? (
-							<form className={!isSameAuthorAsPrev ? style.bubE : style.bubE2} onSubmit={e => handleEditSubmit(e, message._id)}>
+							<form
+								className={!isSameAuthorAsPrev ? style.bubE + ' rounded-tr-lg' : style.bubE}
+								onSubmit={e => handleEditSubmit(e, message._id)}
+							>
 								<textarea
 									rows={1}
 									ref={editMsgRef}
@@ -222,17 +190,17 @@ export default function Tchat() {
 									onKeyDown={handleEditClavier}
 									onChange={e => setEditMsgText(e.target.value)}
 								/>
-								<p className={style.date}>{formaterDate(message._creationTime)}</p>
+								<p className={style.datL}>{formaterDate(message._creationTime)}</p>
 								<button type="submit" hidden></button>
 							</form>
 						) : (
 							<div
-								className={!isSameAuthorAsPrev ? style.bubL : style.bubL2}
+								className={!isSameAuthorAsPrev ? style.bubL + ' rounded-tl-lg' : style.bubL}
 								data-message-id={message._id}
 								onContextMenu={handleMessageContextMenu}
 							>
 								<p>{message.content}</p>
-								<p className={style.date}>{formaterDate(message._creationTime)}</p>
+								<p className={style.datL}>{formaterDate(message._creationTime)}</p>
 							</div>
 						)}
 					</div>
@@ -240,9 +208,9 @@ export default function Tchat() {
 					<div key={message._id} className={style.divR}>
 						{/* Affiche le nom seulement si l'auteur change */}
 						{!isSameAuthorAsPrev && <p className={style.nomR}>{message.author}</p>}
-						<div className={!isSameAuthorAsPrev ? style.bubR : style.bubR2}>
+						<div className={!isSameAuthorAsPrev ? style.bubR + ' rounded-tr-lg' : style.bubR}>
 							<p>{message.content}</p>
-							<p className={style.date}>{formaterDate(message._creationTime)}</p>
+							<p className={style.datR}>{formaterDate(message._creationTime)}</p>
 						</div>
 					</div>
 				)

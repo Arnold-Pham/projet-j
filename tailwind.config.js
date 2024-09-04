@@ -12,12 +12,16 @@ module.exports = {
 		},
 		extend: {
 			colors: {
-				background: 'var(--background-color)',
-				text: 'var(--text-color)',
-				'chat-sent': 'var(--chat-sent-background)',
-				'chat-received': 'var(--chat-received-background)',
-				'chat-sent-text': 'var(--chat-sent-text-color)',
-				'chat-received-text': 'var(--chat-received-text-color)'
+				tone: 'var(--tone-one)',
+				'tone-bis': 'var(--tone-bis)',
+				'tone-ter': 'var(--tone-ter)',
+				tint: 'var(--tint-one)',
+				'tint-bis': 'var(--tint-bis)',
+				'tint-ter': 'var(--tint-ter)',
+				org: 'var(--orange)',
+				pur: 'var(--purple)',
+				acc: 'var(--acc-one)',
+				'acc-bis': 'var(--acc-bis)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

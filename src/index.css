@@ -8,30 +8,37 @@
 
 @layer base {
 	:root {
-		--background-color: #f5f5f5;
-		--text-color: #212121;
-		--chat-sent-background: #e65100;
-		--chat-received-background: #e0e0e0;
-		--chat-sent-text-color: #ffffff;
-		--chat-received-text-color: #212121;
-
 		--tchat-max-width: 80%;
 		--radius: 1rem;
+
+		--tone-one: #eee;
+		--tone-bis: #ccc;
+		--tone-ter: #aaa;
+
+		--tint-one: #111;
+		--tint-bis: #555;
+		--tint-ter: #999;
+
+		--orange: #ec8200;
+		--purple: #9b30ff;
+		--acc-one: #222;
+		--acc-bis: #555;
 	}
 
 	.dark {
-		--background-color: #2c2c2c;
-		--text-color: #f0f0f0;
-		--chat-sent-background: #e65100;
-		--chat-received-background: #454545;
-		--chat-sent-text-color: #ffffff;
-		--chat-received-text-color: #dcdcdc;
+		--tone-one: #111;
+		--tone-bis: #333;
+		--tone-ter: #555;
+
+		--tint-one: #eee;
+		--tint-bis: #aaa;
+		--tint-ter: #666;
 	}
 }
 
 body {
-	background-color: var(--background-color);
-	color: var(--text-color);
+	background-color: var(--tone-one);
+	color: var(--tint-one);
 }
 
 * {
