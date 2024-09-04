@@ -13,15 +13,18 @@ const style = {
 	divL: 'flex flex-col items-start mb-1 max-w-tchat mr-auto w-full',
 	nomL: 'px-2 my-1 text-sm text-text',
 	bubL: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text text-justify',
+	bubL2: 'px-4 py-3 max-w-full rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text text-justify',
 
 	// Bulles de message reçues (autres utilisateurs)
 	divR: 'flex flex-col items-end mb-1 max-w-tchat ml-auto w-full',
 	nomR: 'px-2 my-1 text-sm text-text text-right',
 	bubR: 'px-4 py-3 max-w-full rounded-tl-lg rounded-tr-lg rounded-bl-lg bg-chat-received text-chat-received-text text-justify',
+	bubR2: 'px-4 py-3 max-w-full rounded-tl-lg rounded-bl-lg bg-chat-received text-chat-received-text text-justify',
 
 	// Message en cours d'édition
-	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
 	msgE: 'bg-chat-sent text-chat-sent-text text-justify rounded-tl-lg rounded-tr-lg rounded-br-lg resize-none overflow-auto focus:outline-none',
+	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
+	bubE2: 'flex flex-col w-full px-4 py-3 rounded-tr-lg rounded-br-lg bg-chat-sent text-chat-sent-text',
 
 	// Date des messages
 	date: 'text-xs mt-1 text-right',
@@ -201,14 +204,16 @@ export default function Tchat() {
 	return (
 		<div className={`tchat ${style.tchat}`}>
 			{/* Affichage des messages */}
-			{messages?.map(message =>
-				message.authorId === user.id ? (
-					<div key={message._id} className={style.divL}>
-						<p className={style.nomL}>{message.author}</p>
+			{messages?.map((message, index) => {
+				const isSameAuthorAsPrev = index > 0 && messages[index - 1].authorId === message.authorId
 
-						{/* Message éditable ou normal */}
+				return message.authorId === user.id ? (
+					<div key={message._id} className={style.divL}>
+						{/* Affiche le nom seulement si l'auteur change */}
+						{!isSameAuthorAsPrev && <p className={style.nomL}>{message.author}</p>}
+
 						{edit === message._id ? (
-							<form className={style.bubE} onSubmit={e => handleEditSubmit(e, message._id)}>
+							<form className={!isSameAuthorAsPrev ? style.bubE : style.bubE2} onSubmit={e => handleEditSubmit(e, message._id)}>
 								<textarea
 									rows={1}
 									ref={editMsgRef}
@@ -221,7 +226,11 @@ export default function Tchat() {
 								<button type="submit" hidden></button>
 							</form>
 						) : (
-							<div className={style.bubL} data-message-id={message._id} onContextMenu={handleMessageContextMenu}>
+							<div
+								className={!isSameAuthorAsPrev ? style.bubL : style.bubL2}
+								data-message-id={message._id}
+								onContextMenu={handleMessageContextMenu}
+							>
 								<p>{message.content}</p>
 								<p className={style.date}>{formaterDate(message._creationTime)}</p>
 							</div>
@@ -229,16 +238,16 @@ export default function Tchat() {
 					</div>
 				) : (
 					<div key={message._id} className={style.divR}>
-						<p className={style.nomR}>{message.author}</p>
-						<div className={style.bubR}>
+						{/* Affiche le nom seulement si l'auteur change */}
+						{!isSameAuthorAsPrev && <p className={style.nomR}>{message.author}</p>}
+						<div className={!isSameAuthorAsPrev ? style.bubR : style.bubR2}>
 							<p>{message.content}</p>
 							<p className={style.date}>{formaterDate(message._creationTime)}</p>
 						</div>
 					</div>
 				)
-			)}
+			})}
 
-			{/* Ref pour descendre au dernier message envoyé/reçu */}
 			<div ref={lastMsgRef} />
 
 			{/* Menu clic droit */}
@@ -253,7 +262,6 @@ export default function Tchat() {
 				</ul>
 			)}
 
-			{/* Formulaire d'envoi de messages */}
 			<form className={style.tchatForm} onSubmit={handleSendMessage}>
 				<textarea
 					rows={1}
