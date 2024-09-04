@@ -15,7 +15,7 @@ export default function Header() {
 					</Authenticated>
 					<Unauthenticated>
 						<SignInButton mode="modal">
-							<img src={img} alt="Login Button" className="w-8 h-8 bg-white text-primary rounded-full p-1 cursor-pointer" />
+							<img src={img} alt="Login Button" className="w-8 h-8 p-1 flex bg-white cursor-pointer" />
 						</SignInButton>
 					</Unauthenticated>
 				</div>

@@ -39,14 +39,14 @@ body {
 	scrollbar-width: none;
 }
 
-.tchat {
-	max-height: calc(100vh - 136px);
-}
-
 ::-webkit-scrollbar {
 	display: none;
 	width: 0;
 	background: transparent;
+}
+
+.tchat {
+	max-height: calc(100vh - 136px);
 }
 
 .dark button.envoyer {

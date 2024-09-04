@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react'
+import img1 from '../images/Sun.svg'
+import img2 from '../images/Moon.svg'
+import img3 from '../images/Computer.svg'
 
 export default function Theme() {
 	const THEME_KEY = 'theme'
@@ -19,9 +22,15 @@ export default function Theme() {
 
 	return (
 		<>
-			<button onClick={() => handleThemeChange('light')}>White</button>
-			<button onClick={() => handleThemeChange('dark')}>Black</button>
-			<button onClick={() => handleThemeChange('system')}>System</button>
+			<button onClick={() => handleThemeChange('light')} className="bg-white w-8 h-8 p-1 flex align-center justify-center">
+				<img src={img1} alt="Light mode" />
+			</button>
+			<button onClick={() => handleThemeChange('dark')} className="bg-white w-8 h-8 p-1 flex align-center justify-center">
+				<img src={img2} alt="Dark mode" />
+			</button>
+			<button onClick={() => handleThemeChange('system')} className="bg-white w-8 h-8 p-1 flex align-center justify-center">
+				<img src={img3} alt="System mode" />
+			</button>
 		</>
 	)
 }
