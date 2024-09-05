@@ -19,7 +19,7 @@ const style = {
 	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-br-lg bg-org',
 
 	// Menu contextuel
-	menu: 'absolute z-50 px-2 py-1 shadow-lg border rounded-lg',
+	menu: 'absolute z-50 px-2 py-1 bg-tone text-tint shadow-custom-menu',
 	plat: 'text-sm cursor-pointer',
 
 	// Formulaire de chat

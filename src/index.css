@@ -11,28 +11,28 @@
 		--tchat-max-width: 80%;
 		--radius: 1rem;
 
-		--tone-one: #eee;
-		--tone-bis: #ccc;
-		--tone-ter: #aaa;
+		--tone-one: #f0f4fa;
+		--tone-bis: #d9e2ed;
+		--tone-ter: #b3c1d4;
 
-		--tint-one: #111;
-		--tint-bis: #555;
-		--tint-ter: #999;
+		--tint-one: #121820;
+		--tint-bis: #2a3542;
+		--tint-ter: #4d5b6a;
 
 		--orange: #ec8200;
 		--purple: #9b30ff;
-		--acc-one: #222;
-		--acc-bis: #555;
+		--acc-one: #f0f4fa;
+		--acc-bis: #d6dae0;
 	}
 
 	.dark {
-		--tone-one: #111;
-		--tone-bis: #333;
-		--tone-ter: #555;
+		--tone-one: #1a1f26;
+		--tone-bis: #2e3540;
+		--tone-ter: #424955;
 
-		--tint-one: #eee;
-		--tint-bis: #aaa;
-		--tint-ter: #666;
+		--tint-one: #d6dae0;
+		--tint-bis: #afb3ba;
+		--tint-ter: #8c9199;
 	}
 }
 
