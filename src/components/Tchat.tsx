@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 import formaterDate from './FormaterDate'
-import style from './styles/tchatStyle'
+import style from '../styles/tchatStyle'
 
 export default function Tchat_old() {
 	const { user } = useUser() // Récupère User connecté

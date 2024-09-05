@@ -11,7 +11,7 @@ const style = {
 	// Bulles de message reçues (autres utilisateurs)
 	divR: 'flex flex-col items-end mb-1 max-w-tchat ml-auto w-full',
 	nomR: 'px-2 my-1 text-sm text-right',
-	bubR: 'px-4 py-3 max-w-full rounded-tl-lg rounded-bl-lg text-justify bg-tone-bis text-tint',
+	bubR: 'px-4 py-3 max-w-full rounded-tl-lg rounded-bl-lg text-justify bg-tone-ter text-tint-one',
 	datR: 'text-xs mt-1 text-right text-tint-ter',
 
 	// Message en cours d'édition
