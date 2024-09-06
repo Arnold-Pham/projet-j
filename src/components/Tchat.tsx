@@ -2,10 +2,10 @@ import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
-import formaterDate from './FormaterDate'
+import formaterDate from '../utils/FormaterDate'
 import style from '../styles/tchatStyle'
 
-export default function Tchat_old() {
+export default function Tchat() {
 	const { user } = useUser() // Récupère User connecté
 	const [edit, setEdit] = useState('') // ID message à éditer
 	const [newMsgText, setNewMsgText] = useState('') // Nouveau message texte

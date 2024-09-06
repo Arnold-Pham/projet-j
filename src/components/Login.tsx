@@ -8,7 +8,7 @@ export default function Login() {
 				<UserButton />
 			</Authenticated>
 			<Unauthenticated>
-				<SignInButton mode="modal"></SignInButton>
+				<SignInButton mode="modal" />
 			</Unauthenticated>
 		</>
 	)
