@@ -10,7 +10,7 @@ export default function Tchat() {
 	const [edit, setEdit] = useState('') // ID message à éditer
 	const [newMsgText, setNewMsgText] = useState('') // Nouveau message texte
 	const [editMsgText, setEditMsgText] = useState('') // Contenu du message édité
-	const messages = useQuery(api.myFunctions.listMessages, { id: user.id }) // Requête 100 derniers messages
+	const messages = useQuery(api.myFunctions.listAllMessages) // Requête 100 derniers messages
 	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Infos menu clic droit
 
 	// Balises références
@@ -47,7 +47,8 @@ export default function Tchat() {
 	 */
 	const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
-		if (newMsgText.trim() !== '') await sendMessage({ authorId: user.id, author: user.username, content: newMsgText.trim() })
+		if (newMsgText.trim() !== '')
+			await sendMessage({ groupId: '', userId: user?.id || '', user: user?.username || '', content: newMsgText.trim() })
 		setNewMsgText('')
 		autoHeight(sendMsgRef.current)
 	}
@@ -70,10 +71,10 @@ export default function Tchat() {
 	 */
 	const handleEditSubmit = async (e: React.FormEvent<HTMLFormElement>, messageId: string) => {
 		e.preventDefault()
-		const message = messages.find(msg => msg._id === messageId)
+		const message = messages?.find(msg => msg._id === messageId)
 		const trimmedText = editMsgText.trim()
 
-		if (trimmedText !== message.content && trimmedText !== '') {
+		if (trimmedText !== message?.content && trimmedText !== '') {
 			await updateMessage({ id: messageId, content: trimmedText })
 		} else if (trimmedText === '') {
 			await handleDeleteMessage(messageId)
@@ -114,7 +115,7 @@ export default function Tchat() {
 		if (contextMenu) {
 			if (action === 'edit') {
 				setEdit(contextMenu.messageId)
-				const messageToEdit = messages.find(msg => msg._id === contextMenu.messageId)
+				const messageToEdit = messages?.find(msg => msg._id === contextMenu.messageId)
 				if (messageToEdit) setEditMsgText(messageToEdit.content)
 			} else if (action === 'delete') {
 				handleDeleteMessage(contextMenu.messageId)
@@ -170,12 +171,12 @@ export default function Tchat() {
 		<div className={`tchat ${style.tchat}`}>
 			{/* Affichage des messages */}
 			{messages?.map((message, index) => {
-				const isSameAuthorAsPrev = index > 0 && messages[index - 1].authorId === message.authorId
+				const isSameAuthorAsPrev = index > 0 && messages[index - 1].userId === message.userId
 
-				return message.authorId === user.id ? (
+				return message.userId === user?.id ? (
 					<div key={message._id} className={style.divL}>
 						{/* Affiche le nom seulement si l'auteur change */}
-						{!isSameAuthorAsPrev && <p className={style.nomL}>{message.author}</p>}
+						{!isSameAuthorAsPrev && <p className={style.nomL}>{message.user}</p>}
 
 						{edit === message._id ? (
 							<form
@@ -207,7 +208,7 @@ export default function Tchat() {
 				) : (
 					<div key={message._id} className={style.divR}>
 						{/* Affiche le nom seulement si l'auteur change */}
-						{!isSameAuthorAsPrev && <p className={style.nomR}>{message.author}</p>}
+						{!isSameAuthorAsPrev && <p className={style.nomR}>{message.user}</p>}
 						<div className={!isSameAuthorAsPrev ? style.bubR + ' rounded-tr-lg' : style.bubR}>
 							<p>{message.content}</p>
 							<p className={style.datR}>{formaterDate(message._creationTime)}</p>
