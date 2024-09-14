@@ -18,6 +18,30 @@ export const createGroup = mutation({
 	}
 })
 
+export const listMyGroups = query({
+	args: {
+		userId: v.string()
+	},
+	handler: async (ctx, args) => {
+		const myGroups = await ctx.db
+			.query('members')
+			.filter(q => q.eq(q.field('userId'), args.userId))
+			.collect()
+
+		const groupIds = myGroups.map(group => group.groupId)
+
+		const groupsPromises = groupIds.map(groupId =>
+			ctx.db
+				.query('group')
+				.filter(q => q.eq(q.field('_id'), groupId))
+				.collect()
+		)
+		const groupsResults = await Promise.all(groupsPromises)
+		const groups = groupsResults.flat()
+		return groups
+	}
+})
+
 export const listAllGroups = query({
 	handler: async ctx => {
 		return await ctx.db.query('group').collect()

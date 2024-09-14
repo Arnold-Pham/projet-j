@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
-import { useUser } from '@clerk/clerk-react'
 import formaterDate from '../utils/FormaterDate'
+import { useUser } from '@clerk/clerk-react'
 import style from '../styles/tchatStyle'
 
 export default function Tchat() {
@@ -240,6 +240,7 @@ export default function Tchat() {
 					className={style.tchatInput}
 					onKeyDown={handleSendClavier}
 					onChange={e => setNewMsgText(e.target.value)}
+					required
 				/>
 				<button className={style.tchatSend} type="submit" disabled={!newMsgText.trim()}></button>
 			</form>

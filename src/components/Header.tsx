@@ -1,13 +1,16 @@
+import style from '../styles/headerStyle'
+import GroupSelect from './GroupSelect'
 import Login from './Login'
 import Theme from './Theme'
 
 export default function Header() {
 	return (
-		<header className="h-16 bg-tone-bis text-tint">
-			<div className="h-16 container flex justify-between items-center">
-				<h1 className="text-2xl font-bold">PROJET J</h1>
-				<div className="flex gap-3 items-center">
+		<header className={style.head}>
+			<div className={style.header}>
+				<h1 className={style.title}>PROJET J</h1>
+				<div className={style.buttons}>
 					<Theme />
+					<GroupSelect />
 					<Login />
 				</div>
 			</div>

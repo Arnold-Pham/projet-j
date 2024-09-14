@@ -1,19 +1,22 @@
-import { useState } from 'react'
-import { useMutation } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
+import { useUser } from '@clerk/clerk-react'
+import { useMutation } from 'convex/react'
+import style from '../styles/groupStyle'
+import GroupList from './GroupList'
+import { useState } from 'react'
 
-export default function CreateGroupComponent() {
+export default function GroupSelect() {
 	const { user } = useUser()
 	const [groupName, setGroupName] = useState('')
-
+	const [drawerOpen, setDrawerOpen] = useState(false)
 	const addMember = useMutation(api.myFunctions.addMember)
 	const createGroup = useMutation(api.myFunctions.createGroup)
 
+	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
+
 	const handleSubmit = async (event: any) => {
 		event.preventDefault()
-
-		try {
+		if (groupName.trim() !== '') {
 			const newGroup = await createGroup({
 				userId: user?.id || '',
 				user: user?.username || '',
@@ -27,24 +30,62 @@ export default function CreateGroupComponent() {
 				user: user?.username || '',
 				role: 'admin'
 			})
-			setGroupName('')
-			alert("Le groupe a été créé et vous l'avez rejoint !")
-		} catch (error) {
-			console.error('Erreur lors de la création du groupe :', error)
-			alert("Une erreur s'est produite lors de la création du groupe.")
 		}
+		setGroupName('')
 	}
 
 	return (
 		<div>
-			<h2>Créer un nouveau groupe</h2>
-			<form onSubmit={handleSubmit}>
-				<label>
-					Nom du groupe:
-					<input type="text" value={groupName} onChange={e => setGroupName(e.target.value)} required />
-				</label>
-				<button type="submit">Créer et rejoindre le groupe</button>
-			</form>
+			<button onClick={toggleDrawer} className={style.burger}>
+				<svg className="w-5 h-5 text-tint-bis" aria-hidden="true" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+					<path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M5 7h14M5 12h14M5 17h14" />
+				</svg>
+			</button>
+
+			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
+				<div>
+					<div className={style.head}>
+						<div className={style.header}>
+							<h2 className="text-lg font-semibold">Groupes</h2>
+							<button onClick={toggleDrawer} className={style.close}>
+								<svg
+									className="w-5 h-5 text-tint-bis"
+									aria-hidden="true"
+									width="24"
+									height="24"
+									fill="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke="currentColor"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="3"
+										d="M6 18 17.94 6M18 18 6.06 6"
+									/>
+								</svg>
+							</button>
+						</div>
+					</div>
+
+					<form onSubmit={handleSubmit} className={style.form}>
+						<label>Créer un groupe : </label>
+						<input
+							value={groupName}
+							onChange={e => setGroupName(e.target.value)}
+							placeholder="Nom du groupe"
+							maxLength={32}
+							className={style.input}
+							required
+						/>
+						<button type="submit" className={style.button}></button>
+					</form>
+				</div>
+
+				<GroupList />
+			</div>
+
+			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
 		</div>
 	)
 }
