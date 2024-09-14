@@ -1,7 +1,7 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 
-//	GROUPS
+/** ---------------- Group CRUD Operations ---------------- **/
 export const createGroup = mutation({
 	args: {
 		userId: v.string(),
@@ -9,39 +9,42 @@ export const createGroup = mutation({
 		name: v.string()
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.insert('group', {
+		const groupId = await ctx.db.insert('group', {
 			userId: args.userId,
 			user: args.user,
 			name: args.name
 		})
+		return groupId
+	}
+})
+
+export const listAllGroups = query({
+	handler: async ctx => {
+		return await ctx.db.query('group').collect()
+	}
+})
+
+export const updateGroupName = mutation({
+	args: {
+		groupId: v.id('group'),
+		name: v.string()
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.patch(args.groupId, { name: args.name })
 	}
 })
 
 export const deleteGroup = mutation({
 	args: {
-		id: v.id('group')
+		groupId: v.id('group')
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.delete(args.id)
+		await ctx.db.delete(args.groupId)
 	}
 })
 
-export const getGroupId = query({
-	args: {
-		userId: v.string(),
-		name: v.string()
-	},
-	handler: async (ctx, args) => {
-		const group = await ctx.db
-			.query('group')
-			.filter(q => q.and(q.eq(q.field('userId'), args.userId), q.eq(q.field('name'), args.name)))
-			.take(1)
-		return group.length > 0 ? group[0]._id : null
-	}
-})
-
-//	JOINTURE GROUPS-USERS
-export const joinGroup = mutation({
+/** ---------------- Members CRUD Operations ---------------- **/
+export const addMember = mutation({
 	args: {
 		groupId: v.string(),
 		group: v.string(),
@@ -50,7 +53,7 @@ export const joinGroup = mutation({
 		role: v.string()
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.insert('groupUsers', {
+		await ctx.db.insert('members', {
 			groupId: args.groupId,
 			group: args.group,
 			userId: args.userId,
@@ -60,47 +63,42 @@ export const joinGroup = mutation({
 	}
 })
 
-export const joinSearch = query({
+export const listMembers = query({
 	args: {
-		groupId: v.id('group'),
-		userId: v.string()
+		groupId: v.string()
 	},
 	handler: async (ctx, args) => {
-		const searchGroupId = await ctx.db
-			.query('groupUsers')
-			.filter(q => q.and(q.eq(q.field('groupId'), args.groupId), q.eq(q.field('userId'), args.userId)))
-			.take(1)
-		return searchGroupId.length > 0 ? searchGroupId[0]._id : null
+		return await ctx.db
+			.query('members')
+			.filter(q => q.eq(q.field('groupId'), args.groupId))
+			.collect()
 	}
 })
 
-export const leaveGroup = mutation({
+export const changeRole = mutation({
 	args: {
-		groupUsersId: v.id('groupUsers')
+		memberId: v.id('members'),
+		role: v.string()
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.delete(args.groupUsersId)
+		await ctx.db.patch(args.memberId, { role: args.role })
 	}
 })
 
-export const getUsersGroups = query({
+export const removeMember = mutation({
 	args: {
-		userId: v.string()
+		memberId: v.id('members')
 	},
 	handler: async (ctx, args) => {
-		const usersGroup = await ctx.db
-			.query('groupUsers')
-			.filter(q => q.eq(q.field('userId'), args.userId))
-			.order('desc')
-			.take(100)
-		return usersGroup.reverse()
+		await ctx.db.delete(args.memberId)
 	}
 })
 
-//	MESSAGES
+/** ---------------- Messages CRUD Operations ---------------- **/
 export const sendMessage = mutation({
 	args: {
-		groupId: v.id('group'),
+		groupId: v.string(),
+		group: v.string(),
 		userId: v.string(),
 		user: v.string(),
 		content: v.string()
@@ -108,6 +106,7 @@ export const sendMessage = mutation({
 	handler: async (ctx, args) => {
 		await ctx.db.insert('message', {
 			groupId: args.groupId,
+			group: args.group,
 			userId: args.userId,
 			user: args.user,
 			content: args.content
@@ -115,31 +114,34 @@ export const sendMessage = mutation({
 	}
 })
 
+export const listMessages = query({
+	args: {
+		groupId: v.string()
+	},
+	handler: async (ctx, args) => {
+		return await ctx.db
+			.query('message')
+			.filter(q => q.eq(q.field('groupId'), args.groupId))
+			.order('desc')
+			.take(100)
+	}
+})
+
 export const updateMessage = mutation({
 	args: {
-		id: v.id('message'),
+		messageId: v.id('message'),
 		content: v.string()
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.patch(args.id, {
-			content: args.content
-		})
+		await ctx.db.patch(args.messageId, { content: args.content })
 	}
 })
 
-export const deleteMessage = mutation({
+export const removeMessage = mutation({
 	args: {
-		id: v.id('message')
+		messageId: v.id('message')
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.delete(args.id)
-	}
-})
-
-export const listAllMessages = query({
-	args: {},
-	handler: async ctx => {
-		const allMessages = await ctx.db.query('message').order('desc').take(100)
-		return allMessages.reverse()
+		await ctx.db.delete(args.messageId)
 	}
 })

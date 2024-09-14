@@ -1,47 +1,50 @@
-import { useMutation, useQuery } from 'convex/react'
-import { api } from '../../convex/_generated/api'
-import { useUser } from '@clerk/clerk-react'
 import { useState } from 'react'
+import { useMutation } from 'convex/react'
+import { useUser } from '@clerk/clerk-react'
+import { api } from '../../convex/_generated/api'
 
-export default function GroupSelect() {
+export default function CreateGroupComponent() {
 	const { user } = useUser()
-	const [inputValue, setInputValue] = useState('')
-	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [groupName, setGroupName] = useState('')
+
+	const addMember = useMutation(api.myFunctions.addMember)
 	const createGroup = useMutation(api.myFunctions.createGroup)
-	const joinGroup = useMutation(api.myFunctions.joinGroup)
-	const usersGroup = useQuery(api.myFunctions.getUsersGroups, { userId: user?.id || '' })
 
-	const openModal = () => setIsModalOpen(true)
-	const closeModal = () => setIsModalOpen(false)
+	const handleSubmit = async (event: any) => {
+		event.preventDefault()
 
-	const handleCreateGroup = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-		if (inputValue.trim() !== '') await createGroup({ userId: user?.id || '', user: user?.username || '', name: inputValue.trim() })
-		setTimeout(async () => {
-			const groupId = useQuery(api.myFunctions.getGroupId, { userId: user?.id || '', name: inputValue })
-			await joinGroup({ groupId: groupId || '', group: '', userId: user?.id || '', user: user?.username || '', role: 'membre' })
-		}, 2000)
-		closeModal()
+		try {
+			const newGroup = await createGroup({
+				userId: user?.id || '',
+				user: user?.username || '',
+				name: groupName
+			})
+
+			await addMember({
+				groupId: newGroup,
+				group: groupName,
+				userId: user?.id || '',
+				user: user?.username || '',
+				role: 'admin'
+			})
+			setGroupName('')
+			alert("Le groupe a été créé et vous l'avez rejoint !")
+		} catch (error) {
+			console.error('Erreur lors de la création du groupe :', error)
+			alert("Une erreur s'est produite lors de la création du groupe.")
+		}
 	}
 
 	return (
-		<>
-			{usersGroup?.map((group, index) => <p key={index}>{group.groupId}</p>)}
-
-			<button onClick={openModal}>Open Modal</button>
-
-			{isModalOpen && (
-				<div className="modal">
-					<div className="modal-content">
-						<h2>Créer un groupe</h2>
-						<form onSubmit={handleCreateGroup}>
-							<input type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder="Nom du groupe" />
-							<button type="submit">Enregistrer</button>
-						</form>
-						<button onClick={closeModal}>Fermer</button>
-					</div>
-				</div>
-			)}
-		</>
+		<div>
+			<h2>Créer un nouveau groupe</h2>
+			<form onSubmit={handleSubmit}>
+				<label>
+					Nom du groupe:
+					<input type="text" value={groupName} onChange={e => setGroupName(e.target.value)} required />
+				</label>
+				<button type="submit">Créer et rejoindre le groupe</button>
+			</form>
+		</div>
 	)
 }
