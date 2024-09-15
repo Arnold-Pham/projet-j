@@ -1,23 +1,17 @@
-import { SignInButton, UserButton } from '@clerk/clerk-react'
-import { Authenticated, Unauthenticated } from 'convex/react'
-import img from '../images/Shutdown.svg'
+import style from '../styles/headerStyle'
+import GroupSelect from './GroupSelect'
+import Login from './Login'
 import Theme from './Theme'
 
-export default function Header() {
+export default function Header({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
 	return (
-		<header className="h-16 bg-text text-background">
-			<div className="h-16 container flex justify-between items-center">
-				<h1 className="text-2xl font-bold">PROJET J</h1>
-				<div className="flex gap-3 items-center">
+		<header className={style.head}>
+			<div className={style.header}>
+				<h1 className={style.title}>PROJET J</h1>
+				<div className={style.buttons}>
 					<Theme />
-					<Authenticated>
-						<UserButton />
-					</Authenticated>
-					<Unauthenticated>
-						<SignInButton mode="modal">
-							<img src={img} alt="Login Button" className="w-8 h-8 bg-white text-primary rounded-full p-1 cursor-pointer" />
-						</SignInButton>
-					</Unauthenticated>
+					<GroupSelect onSelectGroup={onSelectGroup} />
+					<Login />
 				</div>
 			</div>
 		</header>

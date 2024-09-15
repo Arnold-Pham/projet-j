@@ -23,13 +23,29 @@ npm install
 Démarrer le serveur local
 
 ```
-npm install
+npm run dev
 ```
 
-## III. Fonctions présentes
+Faire un commit
 
--   Création d'une compte personnel
--   Envoyer des messages à soi même (:
+```
+npm run git -- "Commentaire"
+```
+
+## III. Fonctions
+
+Fonctions présentes:
+
+-   Gestion de compte personnel (powered by Clerk)
+-   Création de groupes
+-   Tchat de groupe avec Update/Delete
+-   Thème clair/sombre
+
+Fonctions absentes:
+
+-   Rejoindre le groupe d'un tier
+-   Affichage d'un marqueur de message modifié
+-   Envoi de fichiers (img, voc, vid, pdf, ...)
 
 ## IV. Les membres de la Collaboration
 

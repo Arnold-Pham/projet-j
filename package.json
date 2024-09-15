@@ -1,7 +1,7 @@
 {
 	"name": "projet-j",
 	"private": true,
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"type": "module",
 	"scripts": {
 		"dev": "npm-run-all --parallel dev:frontend dev:backend",
@@ -15,12 +15,10 @@
 	},
 	"dependencies": {
 		"@clerk/clerk-react": "^4.25.2",
-		"clsx": "^2.0.0",
 		"convex": "^1.12.0",
 		"prettier": "^3.3.3",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
-		"tailwind-merge": "^1.14.0",
 		"tailwindcss-animate": "^1.0.7"
 	},
 	"devDependencies": {

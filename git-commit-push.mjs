@@ -24,6 +24,7 @@ const runCommand = async (command, successMessage, errorMessage) => {
 
 const run = async () => {
 	try {
+		await runCommand('npm update', 'Mise à jour des dépendances réussite', 'Erreur de mise à jour des dépendances')
 		await runCommand(
 			'prettier --write --trailing-comma none --arrow-parens avoid --bracket-spacing --end-of-line crlf --single-quote --print-width 150 --use-tabs --tab-width 4 --no-semi .',
 			'Fichiers formatés avec Prettier.',
