@@ -4,7 +4,7 @@ import { v } from 'convex/values'
 export default defineSchema(
 	{
 		message: defineTable({
-			groupId: v.string(),
+			groupId: v.id('group'),
 			group: v.string(),
 			userId: v.string(),
 			user: v.string(),
@@ -15,8 +15,8 @@ export default defineSchema(
 			user: v.string(),
 			name: v.string()
 		}),
-		members: defineTable({
-			groupId: v.string(),
+		member: defineTable({
+			groupId: v.id('group'),
 			group: v.string(),
 			userId: v.string(),
 			user: v.string(),

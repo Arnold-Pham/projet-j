@@ -22,7 +22,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 	const sendMessage = useMutation(api.message.sendMessage)
 	const deleteMessage = useMutation(api.message.deleteMessage)
 	const updateMessage = useMutation(api.message.updateMessage)
-	const messages = useQuery(api.message.listMessages, { groupId })
+	const messages = useQuery(api.message.listMessages, { groupId: groupId as Id<'group'> })
 
 	//	Ajuste la hauteur du textarea
 	const autoHeight = (textarea: HTMLTextAreaElement) => {
@@ -41,7 +41,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		e.preventDefault()
 		if (newMsgText.trim() !== '') {
 			await sendMessage({
-				groupId: groupId,
+				groupId: groupId as Id<'group'>,
 				group: groupName,
 				userId: user?.id || '',
 				user: user?.username || '',

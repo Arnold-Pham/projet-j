@@ -23,7 +23,7 @@ export const listMyGroups = query({
 	},
 	handler: async (ctx, args) => {
 		const myGroups = await ctx.db
-			.query('members')
+			.query('member')
 			.filter(q => q.eq(q.field('userId'), args.userId))
 			.collect()
 
@@ -62,6 +62,26 @@ export const deleteGroup = mutation({
 		groupId: v.id('group')
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.delete(args.groupId)
+		const { groupId } = args
+
+		const messages = await ctx.db
+			.query('message')
+			.filter(q => q.eq(q.field('groupId'), groupId))
+			.collect()
+
+		const members = await ctx.db
+			.query('member')
+			.filter(q => q.eq(q.field('groupId'), groupId))
+			.collect()
+
+		for (const message of messages) {
+			await ctx.db.delete(message._id)
+		}
+
+		for (const member of members) {
+			await ctx.db.delete(member._id)
+		}
+
+		await ctx.db.delete(groupId)
 	}
 })

@@ -50,7 +50,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	//	Fonction pour confirmer le départ du groupe
 	const handleConfirmLeave = async () => {
 		if (selectedGroup) {
-			await deleteMember({ groupId: selectedGroup.id, userId: user?.id || '' })
+			await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
 			setModalOpen(false)
 			setSelectedGroup(null)
 		}
