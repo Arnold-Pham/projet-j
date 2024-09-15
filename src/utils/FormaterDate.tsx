@@ -5,7 +5,7 @@ export default function formaterDate(milliseconds: number): string {
 	const tempsFormat = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: undefined, hour12: false })
 
 	const debutJour = new Date(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate())
-	const estAujourdHui = date >= debutJour && date < debutJour.getTime() + 24 * 60 * 60 * 1000
+	const estAujourdHui = date >= debutJour && date.getTime() < debutJour.getTime() + 24 * 60 * 60 * 1000
 	if (estAujourdHui) return `Aujourd'hui ${tempsFormat}`
 
 	const debutHier = new Date(debutJour.getTime() - 24 * 60 * 60 * 1000)

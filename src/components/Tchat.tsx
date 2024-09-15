@@ -12,18 +12,16 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 	const [editMsgText, setEditMsgText] = useState('') // Contenu du message édité
 	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Infos menu clic droit
 
-	//	Requête pour les messages du groupe actuel
-	const messages = useQuery(api.myFunctions.listMessages, { groupId })
-
 	//	Références pour le scroll auto
 	const lastMsgRef = useRef<HTMLDivElement>(null)
 	const editMsgRef = useRef<HTMLTextAreaElement>(null)
 	const sendMsgRef = useRef<HTMLTextAreaElement>(null)
 
 	//	Gère fonctions externes messages
-	const sendMessage = useMutation(api.myFunctions.sendMessage)
-	const deleteMessage = useMutation(api.myFunctions.deleteMessage)
-	const updateMessage = useMutation(api.myFunctions.updateMessage)
+	const sendMessage = useMutation(api.message.sendMessage)
+	const deleteMessage = useMutation(api.message.deleteMessage)
+	const updateMessage = useMutation(api.message.updateMessage)
+	const messages = useQuery(api.message.listMessages, { groupId })
 
 	//	Ajuste hauteur textarea
 	const autoHeight = (textarea: HTMLTextAreaElement) => {
@@ -57,7 +55,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 	const handleSendClavier = (e: any) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault()
-			e.currentTarget.form?.requestSubmit()
+			e.currentTarget.form.requestSubmit()
 		}
 	}
 
@@ -68,10 +66,11 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		const trimmedText = editMsgText.trim()
 
 		if (trimmedText !== message?.content && trimmedText !== '') {
-			await updateMessage({ id: messageId, content: trimmedText })
+			await updateMessage({ messageId: messageId, content: trimmedText })
 		} else if (trimmedText === '') {
 			await handleDeleteMessage(messageId)
 		}
+
 		setEditMsgText('')
 		setEdit('')
 	}
@@ -80,7 +79,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 	const handleEditClavier = (e: any) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault()
-			e.currentTarget.form?.requestSubmit()
+			e.currentTarget.form.requestSubmit()
 		} else if (e.key === 'Escape') {
 			e.preventDefault()
 			setEditMsgText('')
@@ -94,7 +93,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		setContextMenu({
 			x: e.pageX,
 			y: e.pageY,
-			messageId: e.currentTarget.dataset.messageId || ''
+			messageId: e.currentTarget.dataset.messageId
 		})
 	}
 

@@ -5,7 +5,7 @@ import { useQuery } from 'convex/react'
 
 export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
 	const { user } = useUser()
-	const myGroups = useQuery(api.myFunctions.listMyGroups, { userId: user?.id || '' })
+	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
 
 	//	Loading des groupes
 	if (!myGroups) return <div>Chargement des groupes...</div>
@@ -22,7 +22,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 					))}
 				</ul>
 			) : (
-				<p>Vous n'appartenez à aucun groupe pour le moment.</p>
+				<p className={style.list}>Vous n'appartenez à aucun groupe pour le moment.</p>
 			)}
 		</div>
 	)

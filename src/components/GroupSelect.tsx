@@ -11,8 +11,8 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	const [drawerOpen, setDrawerOpen] = useState(false)
 
 	//	Gère fonctions externes groupes
-	const addMember = useMutation(api.myFunctions.addMember)
-	const createGroup = useMutation(api.myFunctions.createGroup)
+	const addMember = useMutation(api.members.addMember)
+	const createGroup = useMutation(api.group.createGroup)
 
 	//	Gère le menu caché gauche
 	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
