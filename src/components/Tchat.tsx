@@ -1,3 +1,4 @@
+import { Id } from '../../convex/_generated/dataModel'
 import { useMutation, useQuery } from 'convex/react'
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../../convex/_generated/api'
@@ -31,7 +32,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 
 	//	Supprime un message
 	const handleDeleteMessage = async (messageId: string) => {
-		await deleteMessage({ messageId: messageId })
+		await deleteMessage({ messageId: messageId as Id<'message'> })
 		setContextMenu(null)
 	}
 
@@ -47,7 +48,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 				content: newMsgText.trim()
 			})
 			setNewMsgText('')
-			autoHeight(sendMsgRef.current)
+			if (sendMsgRef.current) autoHeight(sendMsgRef.current)
 		}
 	}
 
@@ -66,7 +67,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		const trimmedText = editMsgText.trim()
 
 		if (trimmedText !== message?.content && trimmedText !== '') {
-			await updateMessage({ messageId: messageId, content: trimmedText })
+			await updateMessage({ messageId: messageId as Id<'message'>, content: trimmedText })
 		} else if (trimmedText === '') {
 			await handleDeleteMessage(messageId)
 		}

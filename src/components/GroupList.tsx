@@ -1,3 +1,4 @@
+import { Id } from '../../convex/_generated/dataModel'
 import { useQuery, useMutation } from 'convex/react'
 import { useState, useRef, useEffect } from 'react'
 import { api } from '../../convex/_generated/api'
@@ -64,7 +65,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	//	Fonction pour confirmer la suppression du groupe en intégralité
 	const handleConfirmDelete = async () => {
 		if (selectedGroup) {
-			await deleteGroup({ groupId: selectedGroup.id })
+			await deleteGroup({ groupId: selectedGroup.id as Id<'group'> })
 			setDeleteModalOpen(false)
 			setSelectedGroup(null)
 		}
