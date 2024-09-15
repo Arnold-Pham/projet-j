@@ -53,14 +53,14 @@ export default function Theme() {
 
 	return (
 		<div className={style.btnGrp}>
-			{/* Si showButtons est false, affiche uniquement l'icône du thème actuel */}
+			{/* Theme selectionné */}
 			{!showButtons && (
 				<button onClick={toggleButtons} className={style.btn}>
 					{renderIcon(theme)}
 				</button>
 			)}
 
-			{/* Si showButtons est true, affiche les trois options */}
+			{/* Tous les thèmes */}
 			{showButtons && (
 				<>
 					<button onClick={() => handleThemeChange('light')} className={style.btn}>

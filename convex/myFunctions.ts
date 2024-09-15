@@ -109,7 +109,7 @@ export const changeRole = mutation({
 	}
 })
 
-export const removeMember = mutation({
+export const deleteMember = mutation({
 	args: {
 		memberId: v.id('members')
 	},
@@ -143,11 +143,12 @@ export const listMessages = query({
 		groupId: v.string()
 	},
 	handler: async (ctx, args) => {
-		return await ctx.db
+		const msgs = await ctx.db
 			.query('message')
 			.filter(q => q.eq(q.field('groupId'), args.groupId))
 			.order('desc')
 			.take(100)
+		return msgs.reverse()
 	}
 })
 
@@ -161,7 +162,7 @@ export const updateMessage = mutation({
 	}
 })
 
-export const removeMessage = mutation({
+export const deleteMessage = mutation({
 	args: {
 		messageId: v.id('message')
 	},

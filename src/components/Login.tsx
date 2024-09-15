@@ -1,5 +1,5 @@
-import { SignInButton, UserButton } from '@clerk/clerk-react'
 import { Authenticated, Unauthenticated } from 'convex/react'
+import { SignInButton, UserButton } from '@clerk/clerk-react'
 
 export default function Login() {
 	return (
