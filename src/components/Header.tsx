@@ -1,3 +1,4 @@
+import { Authenticated } from 'convex/react'
 import style from '../styles/headerStyle'
 import GroupSelect from './GroupSelect'
 import Login from './Login'
@@ -10,7 +11,9 @@ export default function Header({ onSelectGroup }: { onSelectGroup: (group: { id:
 				<h1 className={style.title}>PROJET J</h1>
 				<div className={style.buttons}>
 					<Theme />
-					<GroupSelect onSelectGroup={onSelectGroup} />
+					<Authenticated>
+						<GroupSelect onSelectGroup={onSelectGroup} />
+					</Authenticated>
 					<Login />
 				</div>
 			</div>

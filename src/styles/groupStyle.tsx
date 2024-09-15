@@ -8,7 +8,7 @@ const style = {
 	title: 'font-semibold font-lg',
 
 	btnGrp: 'flex gap-2 justify-end',
-	btnLeave: 'bg-red-600 text-white px-2 py-1 rounded focus:outline-none',
+	btnLeave: 'bg-red-700 text-white p-1 rounded focus:outline-none',
 	btnCancel: 'bg-tone-ter px-2 py-1 rounded focus:outline-none',
 
 	//	GroupSelect
