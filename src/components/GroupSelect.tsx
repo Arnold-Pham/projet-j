@@ -73,7 +73,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 			</button>
 
 			{/* Le tiroir */}
-			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
+			<div className={`${drawerOpen ? '-translate-x-0' : 'translate-x-full'} ${style.drawer}`}>
 				<div>
 					<div className={style.head}>
 						<div className={style.header}>
