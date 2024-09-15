@@ -44,9 +44,14 @@ export const changeRole = mutation({
 
 export const deleteMember = mutation({
 	args: {
-		memberId: v.id('members')
+		groupId: v.string(),
+		userId: v.string()
 	},
 	handler: async (ctx, args) => {
-		await ctx.db.delete(args.memberId)
+		const member = await ctx.db
+			.query('members')
+			.filter(q => q.and(q.eq(q.field('groupId'), args.groupId), q.eq(q.field('userId'), args.userId)))
+			.collect()
+		await ctx.db.delete(member[0]._id)
 	}
 })
