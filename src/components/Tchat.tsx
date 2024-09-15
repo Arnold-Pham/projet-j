@@ -6,36 +6,36 @@ import { useUser } from '@clerk/clerk-react'
 import style from '../styles/tchatStyle'
 
 export default function Tchat({ groupId, groupName }: { groupId: string; groupName: string }) {
-	const { user } = useUser() // Récupère User connecté
-	const [edit, setEdit] = useState('') // ID message à éditer
-	const [newMsgText, setNewMsgText] = useState('') // Nouveau message texte
+	const { user } = useUser() // Récupère l'utilisateur connecté
+	const [edit, setEdit] = useState('') // ID du message à éditer
+	const [newMsgText, setNewMsgText] = useState('') // Texte du nouveau message
 	const [editMsgText, setEditMsgText] = useState('') // Contenu du message édité
-	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Infos menu clic droit
+	const [contextMenu, setContextMenu] = useState<{ x: number; y: number; messageId: string } | null>(null) // Infos du menu clic droit
 
-	//	Références pour le scroll auto
+	//	Références pour le défilement automatique
 	const lastMsgRef = useRef<HTMLDivElement>(null)
 	const editMsgRef = useRef<HTMLTextAreaElement>(null)
 	const sendMsgRef = useRef<HTMLTextAreaElement>(null)
 
-	//	Gère fonctions externes messages
+	//	Fonctions pour les messages
 	const sendMessage = useMutation(api.message.sendMessage)
 	const deleteMessage = useMutation(api.message.deleteMessage)
 	const updateMessage = useMutation(api.message.updateMessage)
 	const messages = useQuery(api.message.listMessages, { groupId })
 
-	//	Ajuste hauteur textarea
+	//	Ajuste la hauteur du textarea
 	const autoHeight = (textarea: HTMLTextAreaElement) => {
 		textarea.style.height = 'auto'
 		textarea.style.height = `${textarea.scrollHeight}px`
 	}
 
-	//	Supprime message
+	//	Supprime un message
 	const handleDeleteMessage = async (messageId: string) => {
 		await deleteMessage({ messageId: messageId })
 		setContextMenu(null)
 	}
 
-	// Envoi message avec vérifications
+	//	Envoie un message avec vérifications
 	const handleSendMessage = async (e: any) => {
 		e.preventDefault()
 		if (newMsgText.trim() !== '') {
@@ -51,7 +51,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}
 
-	//	Gère touche "Enter" envoi
+	//	Gère la touche "Enter" pour l'envoi
 	const handleSendClavier = (e: any) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault()
@@ -59,7 +59,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}
 
-	//	Édition message avec vérifications / Supprime message si champ vide
+	//	Édite un message avec vérifications / Supprime un message si le champ est vide
 	const handleEditSubmit = async (e: any, messageId: string) => {
 		e.preventDefault()
 		const message = messages?.find(msg => msg._id === messageId)
@@ -75,7 +75,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		setEdit('')
 	}
 
-	//	Gère touche "Enter" et "Échap" edit
+	//	Gère les touches "Enter" et "Échap" pour l'édition
 	const handleEditClavier = (e: any) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault()
@@ -87,7 +87,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}
 
-	//	Crée menu clic droit
+	//	Crée le menu clic droit
 	const handleMessageContextMenu = (e: any) => {
 		e.preventDefault()
 		setContextMenu({
@@ -97,7 +97,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		})
 	}
 
-	//	Gère éléments menu clic droit
+	//	Gère les éléments du menu clic droit
 	const handleMenuItemClick = (action: any) => {
 		if (contextMenu) {
 			if (action === 'edit') {
@@ -109,7 +109,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}
 
-	// Gère fermeture menu clic droit
+	//	Gère la fermeture du menu clic droit
 	useEffect(() => {
 		document.addEventListener('contextmenu', e => e.preventDefault())
 		document.addEventListener('click', () => setContextMenu(null))
@@ -119,7 +119,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}, [])
 
-	// Focus zone edit
+	//	Focus sur la zone d'édition
 	useEffect(() => {
 		if (edit && editMsgRef.current) {
 			const textarea = editMsgRef.current
@@ -134,24 +134,23 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 		}
 	}, [edit])
 
-	// Scroll vers nouveau message
+	//	Défilement vers le nouveau message
 	useEffect(() => {
 		if (lastMsgRef.current) {
 			lastMsgRef.current.scrollIntoView({ behavior: 'smooth' })
 		}
 	}, [messages])
 
-	// Ajuste hauteur champ envoi
+	//	Ajuste la hauteur du champ d'envoi
 	useEffect(() => {
 		if (sendMsgRef.current) autoHeight(sendMsgRef.current)
 	}, [newMsgText])
 
-	//Ajuste hauteur champ edit
+	//	Ajuste la hauteur du champ d'édition
 	useEffect(() => {
 		if (editMsgRef.current) autoHeight(editMsgRef.current)
 	}, [editMsgText])
 
-	// Rendu du composant
 	return (
 		<div className={`tchat ${style.tchat}`}>
 			{messages?.map((message, index) => {

@@ -6,28 +6,36 @@ import GroupList from './GroupList'
 import { useState } from 'react'
 
 export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
+	//	Obtention des informations utilisateur via Clerk
 	const { user } = useUser()
+	//	États pour gérer les champs de nom de groupe, code d'invitation, état du modal et tiroir
 	const [groupName, setGroupName] = useState('')
 	const [inviteCode, setInviteCode] = useState('')
 	const [modalOpen, setModalOpen] = useState(false)
 	const [drawerOpen, setDrawerOpen] = useState(false)
 	const [isCreatingGroup, setIsCreatingGroup] = useState(true)
 
+	//	Mutations pour ajouter un membre et créer un groupe
 	const addMember = useMutation(api.members.addMember)
 	const createGroup = useMutation(api.group.createGroup)
 
+	//	Fonctions pour basculer l'état du tiroir et du modal
 	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
 	const toggleModal = () => setModalOpen(!modalOpen)
 
+	//	Fonction pour créer un groupe
 	const handleCreateGroup = async (event: any) => {
 		event.preventDefault()
+
 		if (groupName.trim() !== '') {
+			//	Création du groupe
 			const newGroup = await createGroup({
 				userId: user?.id || '',
 				user: user?.username || '',
 				name: groupName
 			})
 
+			//	Ajout de l'utilisateur comme membre admin du nouveau groupe
 			await addMember({
 				groupId: newGroup,
 				group: groupName,
@@ -40,8 +48,9 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 		}
 	}
 
+	//	Fonction pour rejoindre un groupe avec un code d'invitation
 	const handleJoinGroup = async (event: any) => {
-		event.preventDefault()
+		event.preventDefault() // Empêche le comportement par défaut du formulaire
 		if (inviteCode.trim() !== '') {
 			console.log('Rejoindre groupe avec code:', inviteCode)
 			setInviteCode('')
@@ -49,6 +58,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 		}
 	}
 
+	//	Fonction pour fermer le modal si l'utilisateur clique en dehors
 	const handleModalClick = (event: any) => {
 		if (event.target === event.currentTarget) setModalOpen(false)
 	}
@@ -69,7 +79,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 						<div className={style.header}>
 							<h2 className={style.title}>Groupes</h2>
 							<div className={style.btnGrp}>
-								{/* Bouton pour rejoindre un groupe */}
+								{/* Bouton pour ouvrir le modal */}
 								<button onClick={toggleModal} className={style.close}>
 									<svg
 										width="24"
@@ -89,7 +99,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 									</svg>
 								</button>
 
-								{/* Bouton fermer le tiroir */}
+								{/* Bouton pour fermer le tiroir */}
 								<button onClick={toggleDrawer} className={style.close}>
 									<svg
 										width="24"
@@ -117,6 +127,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 				</div>
 			</div>
 
+			{/* Couverture du tiroir */}
 			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
 
 			{/* Modal pour créer ou rejoindre un groupe */}
@@ -129,8 +140,8 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 							<input
 								required
 								maxLength={32}
-								value={isCreatingGroup ? groupName : inviteCode}
 								className={style.input}
+								value={isCreatingGroup ? groupName : inviteCode}
 								placeholder={isCreatingGroup ? 'Nom du groupe' : "Code d'invitation"}
 								onChange={e => (isCreatingGroup ? setGroupName(e.target.value) : setInviteCode(e.target.value))}
 							/>
