@@ -3,7 +3,7 @@ import { mutation } from './_generated/server'
 import { v } from 'convex/values'
 
 const generateCode = async (ctx: MutationCtx, length: number = 8): Promise<string> => {
-	const charset = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz123456789'
+	const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789'
 	let isUnique = false
 	let code = ''
 

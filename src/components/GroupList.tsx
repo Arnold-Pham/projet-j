@@ -14,6 +14,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const [codeModal, setCodeModal] = useState<boolean>(false)
 	const [leaveModal, setLeaveModal] = useState<boolean>(false)
 	const [deleteModal, setDeleteModal] = useState<boolean>(false)
+	const [codeError, setCodeError] = useState<string | null>(null)
 	const [durationUnit, setDurationUnit] = useState<string>('days')
 	const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null)
 
@@ -27,9 +28,9 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	useEffect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
 			if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+				setCodeModal(false)
 				setLeaveModal(false)
 				setDeleteModal(false)
-				setCodeModal(false)
 			}
 		}
 
@@ -39,24 +40,27 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 
 	const handleCode = (groupId: string, group: string) => {
 		setSelectedGroup({ id: groupId, name: group })
+		setCodeError(null)
 		setCodeModal(true)
 	}
 
 	const handleConfirmCode = async () => {
-		const maxUse = getMaxUses()
-		const expire = convertToUnix()
+		if ((duration !== '' && !noExpiry) || noExpiry) {
+			const maxUse = getMaxUses()
+			const expire = convertToUnix()
 
-		if (selectedGroup) {
-			await createCode({
-				groupId: selectedGroup.id as Id<'group'>,
-				group: selectedGroup.name,
-				creatorId: user?.id || '',
-				maxUses: maxUse,
-				expiresAt: expire
-			})
-		}
+			if (selectedGroup) {
+				await createCode({
+					groupId: selectedGroup.id as Id<'group'>,
+					group: selectedGroup.name,
+					creatorId: user?.id || '',
+					maxUses: maxUse,
+					expiresAt: expire
+				})
+			}
 
-		codeClear()
+			codeClear()
+		} else setCodeError('Choisisez une durée de vie')
 	}
 
 	const handleDelete = (groupId: string, group: string) => {
@@ -67,6 +71,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const handleConfirmDelete = async () => {
 		if (selectedGroup) {
 			await deleteGroup({ groupId: selectedGroup.id as Id<'group'> })
+			onSelectGroup(null)
 			setDeleteModal(false)
 			setSelectedGroup(null)
 		}
@@ -80,8 +85,8 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const handleConfirmLeave = async () => {
 		if (selectedGroup) {
 			await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
-			setLeaveModal(false)
 			onSelectGroup(null)
+			setLeaveModal(false)
 			setSelectedGroup(null)
 		}
 	}
@@ -98,7 +103,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		if (durationUnit === 'weeks') durationInSeconds = Number(duration) * secondsInWeek
 		if (durationUnit === 'months') durationInSeconds = Number(duration) * secondsInMonth
 
-		return Math.floor(Date.now()) + durationInSeconds
+		return Math.floor(Date.now()) + durationInSeconds * 1000
 	}
 
 	const getMaxUses = () => (maxUses === '' || Number(maxUses) <= 0 ? undefined : Number(maxUses))
@@ -107,8 +112,9 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		setMaxUses('')
 		setDuration('')
 		setNoExpiry(false)
-		setSelectedGroup(null)
+		setCodeError(null)
 		setCodeModal(false)
+		setSelectedGroup(null)
 		setDurationUnit('days')
 	}
 
@@ -226,15 +232,20 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 				<div className={style.modalBack}>
 					<div ref={modalRef} className={style.modal}>
 						<h2 className={style.title}>Vous voulez inviter des gens ?</h2>
-						<p>Expiration:</p>
 
+						{codeError && <p className="p-4 my-2 rounded-sm bg-tone-ter text-red-500 text-center">{codeError}</p>}
+
+						<p>Expiration:</p>
 						{!noExpiry && (
 							<div className="flex gap-1 mb-2">
 								<input
 									type="number"
 									value={duration}
 									placeholder="Durée"
-									onChange={e => setDuration(e.target.value)}
+									onChange={e => {
+										setCodeError(null)
+										setDuration(e.target.value)
+									}}
 									className={`${style.input}`}
 								/>
 								<select value={durationUnit} onChange={e => setDurationUnit(e.target.value)} className={style.input}>
@@ -246,7 +257,14 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 						)}
 
 						<label className="flex items-center my-2">
-							<input type="checkbox" checked={noExpiry} onChange={() => setNoExpiry(!noExpiry)} />
+							<input
+								type="checkbox"
+								checked={noExpiry}
+								onChange={() => {
+									setCodeError(null)
+									setNoExpiry(!noExpiry)
+								}}
+							/>
 							Pas d'expiration (Never)
 						</label>
 						<label>
