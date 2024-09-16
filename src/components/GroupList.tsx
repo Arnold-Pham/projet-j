@@ -17,7 +17,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const [modalOpen, setModalOpen] = useState(false)
 	const [codeModalOpen, setCodeModalOpen] = useState(false)
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-	const [selectedGroup, setSelectedGroup] = useState<{ id: string } | null>(null)
+	const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null)
 
 	//	Mutation pour supprimer un membre du groupe
 	const createCode = useMutation(api.invitationCode.createCode)
@@ -48,8 +48,8 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	if (!myGroups) return <div>Chargement des groupes...</div>
 
 	//	Fonction pour ouvrir le modal de suppression de membre (quitter groupe)
-	const handleLeave = (groupId: string) => {
-		setSelectedGroup({ id: groupId })
+	const handleLeave = (groupId: string, group: string) => {
+		setSelectedGroup({ id: groupId, name: group })
 		setModalOpen(true)
 	}
 
@@ -63,8 +63,8 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	}
 
 	//	Fonction pour ouvrir le modal de suppression définitive
-	const handleDelete = (groupId: string) => {
-		setSelectedGroup({ id: groupId })
+	const handleDelete = (groupId: string, group: string) => {
+		setSelectedGroup({ id: groupId, name: group })
 		setDeleteModalOpen(true)
 	}
 
@@ -78,8 +78,8 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	}
 
 	//	Fonction pour ouvrir le modal de code
-	const handleCode = (groupId: string) => {
-		setSelectedGroup({ id: groupId })
+	const handleCode = (groupId: string, group: string) => {
+		setSelectedGroup({ id: groupId, name: group })
 		setCodeModalOpen(true)
 	}
 
@@ -111,6 +111,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		if (selectedGroup !== null)
 			await createCode({
 				groupId: selectedGroup.id as Id<'group'>,
+				group: '',
 				creatorId: user?.id || '',
 				maxUses: maxUse,
 				expiresAt: expire
@@ -136,24 +137,24 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 						<li key={group._id} className={style.listElem} onClick={() => onSelectGroup({ id: group._id, name: group.name })}>
 							{group.name}
 							<div className={style.btnGrp}>
-								{group.role === 'admin' ? (
+								{group.role === 'admin' && (
 									<button
 										className={style.btnLeave}
 										onClick={e => {
 											e.stopPropagation()
-											handleCode(group._id)
+											handleCode(group._id, group.name)
 										}}
 									>
 										Code
 									</button>
-								) : null}
+								)}
 
 								{/* Bouton pour quitter un groupe */}
 								<button
 									className={style.btnLeave}
 									onClick={e => {
 										e.stopPropagation() // Empêche le clic sur le bouton de sélectionner l'élément de la liste
-										handleLeave(group._id)
+										handleLeave(group._id, group.name)
 									}}
 								>
 									<svg width="24" height="24" aria-hidden="true" fill="none" viewBox="0 0 24 24" className="w-5 h-5 text-white">
@@ -168,12 +169,12 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 								</button>
 
 								{/* Bouton pour supprimer un groupe */}
-								{group.userId === user?.id && (
+								{group.role === 'admin' && (
 									<button
 										className={style.btnLeave}
 										onClick={e => {
 											e.stopPropagation() // Empêche le clic sur le bouton de sélectionner l'élément de la liste
-											handleDelete(group._id)
+											handleDelete(group._id, group.name)
 										}}
 									>
 										<svg width="24" height="24" fill="none" aria-hidden="true" viewBox="0 0 24 24" className="w-5 h-5 text-white">

@@ -24,6 +24,7 @@ export default defineSchema(
 		}),
 		invitationCode: defineTable({
 			groupId: v.id('group'),
+			group: v.string(),
 			creatorId: v.string(),
 			code: v.string(),
 			currentUses: v.number(),

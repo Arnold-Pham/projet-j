@@ -18,6 +18,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	//	Mutations pour ajouter un membre et créer un groupe
 	const addMember = useMutation(api.members.addMember)
 	const createGroup = useMutation(api.group.createGroup)
+	const useCode = useMutation(api.invitationCode.useCode)
 
 	//	Fonctions pour basculer l'état du tiroir et du modal
 	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
@@ -55,9 +56,13 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 
 	//	Fonction pour rejoindre un groupe avec un code d'invitation
 	const handleJoinGroup = async (event: any) => {
-		event.preventDefault() // Empêche le comportement par défaut du formulaire
+		event.preventDefault()
 		if (inviteCode.trim() !== '') {
-			console.log('Rejoindre groupe avec code:', inviteCode)
+			await useCode({
+				code: inviteCode.trim(),
+				userId: user?.id || '',
+				user: user?.username || ''
+			})
 			setInviteCode('')
 			setModalOpen(false)
 		}
@@ -133,6 +138,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 
 			{/* Couverture du tiroir */}
 			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
+
 			{/* Modal pour créer ou rejoindre un groupe */}
 			{modalOpen && (
 				<div className={style.modalBack} onClick={handleModalClick}>
