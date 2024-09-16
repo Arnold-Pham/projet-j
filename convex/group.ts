@@ -26,9 +26,11 @@ export const listMyGroups = query({
 			.query('member')
 			.filter(q => q.eq(q.field('userId'), args.userId))
 			.collect()
-
-		const groupIds = myGroups.map(group => group.groupId)
-
+		const groupData = myGroups.map(member => ({
+			groupId: member.groupId,
+			role: member.role
+		}))
+		const groupIds = Array.from(new Set(groupData.map(data => data.groupId)))
 		const groupsPromises = groupIds.map(groupId =>
 			ctx.db
 				.query('group')
@@ -37,7 +39,12 @@ export const listMyGroups = query({
 		)
 		const groupsResults = await Promise.all(groupsPromises)
 		const groups = groupsResults.flat()
-		return groups
+		const groupsWithRoles = groups.map(group => {
+			const memberData = groupData.find(data => data.groupId === group._id)
+			return { ...group, role: memberData?.role || 'mermber' }
+		})
+
+		return groupsWithRoles
 	}
 })
 
@@ -74,9 +81,14 @@ export const deleteGroup = mutation({
 			.filter(q => q.eq(q.field('groupId'), groupId))
 			.collect()
 
-		for (const message of messages) await ctx.db.delete(message._id)
+		const codes = await ctx.db
+			.query('invitationCode')
+			.filter(q => q.eq(q.field('groupId'), groupId))
+			.collect()
 
+		for (const message of messages) await ctx.db.delete(message._id)
 		for (const member of members) await ctx.db.delete(member._id)
+		for (const code of codes) await ctx.db.delete(code._id)
 
 		await ctx.db.delete(groupId)
 	}

@@ -136,6 +136,18 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 						<li key={group._id} className={style.listElem} onClick={() => onSelectGroup({ id: group._id, name: group.name })}>
 							{group.name}
 							<div className={style.btnGrp}>
+								{group.role === 'admin' ? (
+									<button
+										className={style.btnLeave}
+										onClick={e => {
+											e.stopPropagation()
+											handleCode(group._id)
+										}}
+									>
+										Code
+									</button>
+								) : null}
+
 								{/* Bouton pour quitter un groupe */}
 								<button
 									className={style.btnLeave}
