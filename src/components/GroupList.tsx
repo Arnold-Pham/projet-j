@@ -5,132 +5,117 @@ import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 import style from '../styles/groupStyle'
 
-export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
-	//	Obtention des informations utilisateur via Clerk
+export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
-	const [noExpiry, setNoExpiry] = useState(false) // État pour la case à cocher "Pas d'expiration"
-	const [duration, setDuration] = useState('') // État pour la durée de validité (nombre)
-	const [durationUnit, setDurationUnit] = useState('days') // État pour l'unité de durée (jours, semaines, mois)
-	const [maxUses, setMaxUses] = useState('') // État pour le nombre maximum d'utilisations
 
-	//	États pour gérer l'état du modal et la selection de groupe
-	const [modalOpen, setModalOpen] = useState(false)
-	const [codeModalOpen, setCodeModalOpen] = useState(false)
-	const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+	const [maxUses, setMaxUses] = useState<string>('')
+	const [duration, setDuration] = useState<string>('')
+	const [noExpiry, setNoExpiry] = useState<boolean>(false)
+	const [codeModal, setCodeModal] = useState<boolean>(false)
+	const [leaveModal, setLeaveModal] = useState<boolean>(false)
+	const [deleteModal, setDeleteModal] = useState<boolean>(false)
+	const [durationUnit, setDurationUnit] = useState<string>('days')
 	const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null)
 
-	//	Mutation pour supprimer un membre du groupe
-	const createCode = useMutation(api.invitationCode.createCode)
-	const deleteMember = useMutation(api.members.deleteMember)
 	const deleteGroup = useMutation(api.group.deleteGroup)
-
-	//	Query pour récupérer les groupes de l'utilisateur
+	const deleteMember = useMutation(api.members.deleteMember)
+	const createCode = useMutation(api.invitationCode.createCode)
 	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
 
-	//	Référence pour l'élément modal
 	const modalRef = useRef<HTMLDivElement>(null)
 
-	//	Gestion du clic en dehors du modal pour fermer le modal
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-				setModalOpen(false)
-				setDeleteModalOpen(false)
+		const handleClickOutside = (e: MouseEvent) => {
+			if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+				setLeaveModal(false)
+				setDeleteModal(false)
+				setCodeModal(false)
 			}
 		}
 
 		document.addEventListener('mousedown', handleClickOutside)
-
 		return () => document.removeEventListener('mousedown', handleClickOutside)
 	}, [modalRef])
 
-	//	Affichage d'un message de chargement si les groupes ne sont pas encore disponibles
-	if (!myGroups) return <div>Chargement des groupes...</div>
-
-	//	Fonction pour ouvrir le modal de suppression de membre (quitter groupe)
-	const handleLeave = (groupId: string, group: string) => {
+	const handleCode = (groupId: string, group: string) => {
 		setSelectedGroup({ id: groupId, name: group })
-		setModalOpen(true)
+		setCodeModal(true)
 	}
 
-	//	Fonction pour confirmer le départ du groupe
-	const handleConfirmLeave = async () => {
+	const handleConfirmCode = async () => {
+		const maxUse = getMaxUses()
+		const expire = convertToUnix()
+
 		if (selectedGroup) {
-			await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
-			setModalOpen(false)
-			setSelectedGroup(null)
+			await createCode({
+				groupId: selectedGroup.id as Id<'group'>,
+				group: selectedGroup.name,
+				creatorId: user?.id || '',
+				maxUses: maxUse,
+				expiresAt: expire
+			})
 		}
+
+		codeClear()
 	}
 
-	//	Fonction pour ouvrir le modal de suppression définitive
 	const handleDelete = (groupId: string, group: string) => {
 		setSelectedGroup({ id: groupId, name: group })
-		setDeleteModalOpen(true)
+		setDeleteModal(true)
 	}
 
-	//	Fonction pour confirmer la suppression du groupe en intégralité
 	const handleConfirmDelete = async () => {
 		if (selectedGroup) {
 			await deleteGroup({ groupId: selectedGroup.id as Id<'group'> })
-			setDeleteModalOpen(false)
+			setDeleteModal(false)
 			setSelectedGroup(null)
 		}
 	}
 
-	//	Fonction pour ouvrir le modal de code
-	const handleCode = (groupId: string, group: string) => {
+	const handleLeave = (groupId: string, group: string) => {
 		setSelectedGroup({ id: groupId, name: group })
-		setCodeModalOpen(true)
+		setLeaveModal(true)
+	}
+
+	const handleConfirmLeave = async () => {
+		if (selectedGroup) {
+			await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
+			setLeaveModal(false)
+			onSelectGroup(null)
+			setSelectedGroup(null)
+		}
 	}
 
 	const convertToUnix = () => {
 		if (noExpiry) return undefined
 
-		let durationInSeconds = 0
 		const secondsInDay = 86400
 		const secondsInWeek = secondsInDay * 7
 		const secondsInMonth = secondsInDay * 30
 
+		let durationInSeconds = 0
 		if (durationUnit === 'days') durationInSeconds = Number(duration) * secondsInDay
 		if (durationUnit === 'weeks') durationInSeconds = Number(duration) * secondsInWeek
 		if (durationUnit === 'months') durationInSeconds = Number(duration) * secondsInMonth
 
-		const dateMax = Math.floor(Date.now()) + durationInSeconds
-		return dateMax
+		return Math.floor(Date.now()) + durationInSeconds
 	}
 
-	const getMaxUses = () => {
-		if (maxUses === '' || Number(maxUses) <= 0) return undefined
-		return Number(maxUses)
-	}
-
-	//	Fonction pour confirmer les paramètres d'expiration du code
-	const handleConfirmCode = async () => {
-		const maxUse = getMaxUses()
-		const expire = convertToUnix()
-		if (selectedGroup !== null)
-			await createCode({
-				groupId: selectedGroup.id as Id<'group'>,
-				group: '',
-				creatorId: user?.id || '',
-				maxUses: maxUse,
-				expiresAt: expire
-			})
-		codeClear()
-	}
+	const getMaxUses = () => (maxUses === '' || Number(maxUses) <= 0 ? undefined : Number(maxUses))
 
 	const codeClear = () => {
 		setMaxUses('')
 		setDuration('')
 		setNoExpiry(false)
 		setSelectedGroup(null)
-		setCodeModalOpen(false)
+		setCodeModal(false)
 		setDurationUnit('days')
 	}
 
+	if (!myGroups) return <div>Chargement des groupes en cours...</div>
+
 	return (
 		<div className={`grp ${style.listDiv}`}>
-			{/* Liste des groupes auxquels l'utilisateur appartient */}
 			{myGroups.length !== 0 ? (
 				<ul className={style.list}>
 					{myGroups.map(group => (
@@ -145,15 +130,22 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 											handleCode(group._id, group.name)
 										}}
 									>
-										Code
+										<svg width="24" height="24" fill="none" aria-hidden="true" viewBox="0 0 24 24" className="w-5 h-5 text-white">
+											<path
+												stroke-width="2"
+												stroke="currentColor"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961"
+											/>
+										</svg>
 									</button>
 								)}
 
-								{/* Bouton pour quitter un groupe */}
 								<button
 									className={style.btnLeave}
 									onClick={e => {
-										e.stopPropagation() // Empêche le clic sur le bouton de sélectionner l'élément de la liste
+										e.stopPropagation()
 										handleLeave(group._id, group.name)
 									}}
 								>
@@ -168,12 +160,11 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 									</svg>
 								</button>
 
-								{/* Bouton pour supprimer un groupe */}
 								{group.role === 'admin' && (
 									<button
 										className={style.btnLeave}
 										onClick={e => {
-											e.stopPropagation() // Empêche le clic sur le bouton de sélectionner l'élément de la liste
+											e.stopPropagation()
 											handleDelete(group._id, group.name)
 										}}
 									>
@@ -193,18 +184,17 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 					))}
 				</ul>
 			) : (
-				<p className={style.list}>Vous n'appartenez à aucun groupe pour le moment.</p>
+				<p className={style.list}>Vous n'appartenez à aucun groupe.</p>
 			)}
 
-			{/* Modal de confirmation de départ */}
-			{modalOpen && (
+			{leaveModal && (
 				<div className={style.modalBack}>
 					<div ref={modalRef} className={style.modal}>
-						<h2 className={style.title}>Confirmer le départ</h2>
+						<h2 className={style.title}>Vous partez ?</h2>
 						<p className="mt-2 mb-4">Êtes-vous sûr de vouloir quitter ce groupe ?</p>
 						<div className={style.btnGrp}>
-							<button onClick={() => setModalOpen(false)} className={style.btnCancel}>
-								Annuler
+							<button onClick={() => setLeaveModal(false)} className={style.btnCancel}>
+								Non
 							</button>
 							<button onClick={handleConfirmLeave} className={style.btnLeave}>
 								Quitter
@@ -214,14 +204,14 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 				</div>
 			)}
 
-			{/* Modal de suppression définitive */}
-			{deleteModalOpen && (
+			{deleteModal && (
 				<div className={style.modalBack}>
 					<div ref={modalRef} className={style.modal}>
-						<h2 className={style.title}>Supprimer le groupe</h2>
-						<p className="mt-2 mb-4">Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est irréversible.</p>
+						<h2 className={style.title}>Vous voulez vraiment supprimer le groupe ?</h2>
+						<p className="my-2">Vous allez supprimer le groupe, virer tous ses membres, et détruire tous les messages.</p>
+						<p className="my-2">Cette action est irréversible.</p>
 						<div className={style.btnGrp}>
-							<button onClick={() => setDeleteModalOpen(false)} className={style.btnCancel}>
+							<button onClick={() => setDeleteModal(false)} className={style.btnCancel}>
 								Annuler
 							</button>
 							<button onClick={handleConfirmDelete} className={style.btnLeave}>
@@ -232,16 +222,14 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 				</div>
 			)}
 
-			{/* Modal pour les paramètres du code */}
-			{codeModalOpen && (
+			{codeModal && (
 				<div className={style.modalBack}>
 					<div ref={modalRef} className={style.modal}>
-						<h2 className={style.title}>Création du code d'invitation</h2>
+						<h2 className={style.title}>Vous voulez inviter des gens ?</h2>
 						<p>Expiration:</p>
 
-						{/* Si "never" n'est pas coché, afficher les champs de durée */}
 						{!noExpiry && (
-							<div className="flex">
+							<div className="flex gap-1 mb-2">
 								<input
 									type="number"
 									value={duration}
@@ -257,13 +245,10 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 							</div>
 						)}
 
-						{/* Checkbox "never" pour désactiver l'expiration */}
-						<label className="flex items-center">
+						<label className="flex items-center my-2">
 							<input type="checkbox" checked={noExpiry} onChange={() => setNoExpiry(!noExpiry)} />
 							Pas d'expiration (Never)
 						</label>
-
-						{/* Nombre maximum d'utilisations */}
 						<label>
 							Utilisations max :
 							<input
@@ -274,8 +259,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 								placeholder="Utilisations max"
 							/>
 						</label>
-
-						<div className={style.btnGrp}>
+						<div className={`${style.btnGrp} mt-4`}>
 							<button onClick={codeClear} className={style.btnCancel}>
 								Annuler
 							</button>

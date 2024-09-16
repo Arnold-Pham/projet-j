@@ -1,47 +1,40 @@
-import { api } from '../../convex/_generated/api'
-import { useUser } from '@clerk/clerk-react'
+import { useState } from 'react'
 import { useMutation } from 'convex/react'
+import { useUser } from '@clerk/clerk-react'
+import { api } from '../../convex/_generated/api'
 import style from '../styles/groupStyle'
 import GroupList from './GroupList'
-import { useState } from 'react'
 
-export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
-	//	Obtention des informations utilisateur via Clerk
+export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
-	//	États pour gérer les champs de nom de groupe, code d'invitation, état du modal et tiroir
-	const [groupName, setGroupName] = useState('')
-	const [inviteCode, setInviteCode] = useState('')
-	const [modalOpen, setModalOpen] = useState(false)
-	const [drawerOpen, setDrawerOpen] = useState(false)
-	const [isCreatingGroup, setIsCreatingGroup] = useState(true)
 
-	//	Mutations pour ajouter un membre et créer un groupe
+	const [groupName, setGroupName] = useState<string>('')
+	const [inviteCode, setInviteCode] = useState<string>('')
+	const [modalOpen, setModalOpen] = useState<boolean>(false)
+	const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
+	const [isCreatingGroup, setIsCreatingGroup] = useState<boolean>(true)
+
 	const addMember = useMutation(api.members.addMember)
 	const createGroup = useMutation(api.group.createGroup)
 	const useCode = useMutation(api.invitationCode.useCode)
 
-	//	Fonctions pour basculer l'état du tiroir et du modal
-	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
 	const toggleModal = () => setModalOpen(!modalOpen)
+	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
 
-	const handleSelectGroup = (group: { id: string; name: string }) => {
+	const handleSelectGroup = (group: { id: string; name: string } | null) => {
 		onSelectGroup(group)
 		setDrawerOpen(false)
 	}
 
-	//	Fonction pour créer un groupe
-	const handleCreateGroup = async (event: any) => {
-		event.preventDefault()
-
+	const handleCreateGroup = async (e: React.FormEvent) => {
+		e.preventDefault()
 		if (groupName.trim() !== '') {
-			//	Création du groupe
 			const newGroup = await createGroup({
 				userId: user?.id || '',
 				user: user?.username || '',
 				name: groupName
 			})
 
-			//	Ajout de l'utilisateur comme membre admin du nouveau groupe
 			await addMember({
 				groupId: newGroup,
 				group: groupName,
@@ -49,46 +42,49 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 				user: user?.username || '',
 				role: 'admin'
 			})
-			setGroupName('')
-			setModalOpen(false)
+
+			codeClear()
 		}
 	}
 
-	//	Fonction pour rejoindre un groupe avec un code d'invitation
-	const handleJoinGroup = async (event: any) => {
-		event.preventDefault()
+	const handleJoinGroup = async (e: React.FormEvent) => {
+		e.preventDefault()
 		if (inviteCode.trim() !== '') {
 			await useCode({
 				code: inviteCode.trim(),
 				userId: user?.id || '',
 				user: user?.username || ''
 			})
-			setInviteCode('')
-			setModalOpen(false)
+
+			codeClear()
 		}
 	}
 
-	//	Fonction pour fermer le modal si l'utilisateur clique en dehors
-	const handleModalClick = (event: any) => {
-		if (event.target === event.currentTarget) setModalOpen(false)
+	const handleModalClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (e.target === e.currentTarget) codeClear()
+	}
+
+	const codeClear = () => {
+		setIsCreatingGroup(true)
+		setModalOpen(false)
+		setInviteCode('')
+		setGroupName('')
 	}
 
 	return (
 		<div>
-			{/* Bouton burger pour ouvrir le tiroir */}
 			<button onClick={toggleDrawer} className={style.burger}>
 				<svg className="w-5 h-5 text-tint-bis" aria-hidden="true" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-					<path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M5 7h14M5 12h14M5 17h14" />
+					<path stroke="currentColor" strokeLinecap="round" strokeWidth="3" d="M5 7h14M5 12h14M5 17h14" />
 				</svg>
 			</button>
-			{/* Le tiroir */}
+
 			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
 				<div>
 					<div className={style.head}>
 						<div className={style.header}>
-							<h2 className={style.title}>Groupes</h2>
+							<h2 className={style.title}>Mes groupes</h2>
 							<div className={style.btnGrp}>
-								{/* Bouton pour ouvrir le modal */}
 								<button onClick={toggleModal} className={style.close}>
 									<svg
 										width="24"
@@ -99,16 +95,15 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 										className="w-5 h-5 text-tint-bis"
 									>
 										<path
-											stroke-width="3"
+											strokeWidth="3"
 											d="M5 12h14m-7 7V5"
 											stroke="currentColor"
-											stroke-linecap="round"
-											stroke-linejoin="round"
+											strokeLinecap="round"
+											strokeLinejoin="round"
 										/>
 									</svg>
 								</button>
 
-								{/* Bouton pour fermer le tiroir */}
 								<button onClick={toggleDrawer} className={style.close}>
 									<svg
 										width="24"
@@ -119,10 +114,10 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 										className="w-5 h-5 text-tint-bis"
 									>
 										<path
-											stroke-width="3"
+											strokeWidth="3"
 											stroke="currentColor"
-											stroke-linecap="round"
-											stroke-linejoin="round"
+											strokeLinecap="round"
+											strokeLinejoin="round"
 											d="M6 18 17.94 6M18 18 6.06 6"
 										/>
 									</svg>
@@ -131,15 +126,12 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 						</div>
 					</div>
 
-					{/* Liste des groupes */}
 					<GroupList onSelectGroup={handleSelectGroup} />
 				</div>
 			</div>
 
-			{/* Couverture du tiroir */}
 			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
 
-			{/* Modal pour créer ou rejoindre un groupe */}
 			{modalOpen && (
 				<div className={style.modalBack} onClick={handleModalClick}>
 					<div className={style.modal} onClick={e => e.stopPropagation()}>
@@ -164,7 +156,6 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 							</div>
 						</form>
 
-						{/* Toggle entre créer et rejoindre un groupe */}
 						<div className="mt-2">
 							<p onClick={() => setIsCreatingGroup(!isCreatingGroup)} className="cursor-pointer underline">
 								{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}
