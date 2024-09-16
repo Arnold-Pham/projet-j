@@ -13,7 +13,7 @@ const style = {
 
 	//	GroupSelect
 	burger: 'bg-tone-ter text-tint flex p-1 items-center rounded-lg',
-	drawer: 'fixed top-0 right-0 h-full bg-tone-bis text-tint transform transition-transform duration-200 ease-in-out z-40 w-full sm:w-96',
+	drawer: 'fixed top-0 left-0 h-full bg-tone-bis text-tint transform transition-transform duration-200 ease-in-out z-40 w-full sm:w-96',
 	head: 'h-16 bg-tone-ter text-tint',
 	header: 'h-16 p-4 flex items-center justify-between',
 	close: 'bg-tone-bis text-tint flex p-1 items-center rounded-lg',

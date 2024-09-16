@@ -48,10 +48,10 @@ export const deleteMember = mutation({
 		userId: v.string()
 	},
 	handler: async (ctx, args) => {
-		const member = await ctx.db
+		const membre = await ctx.db
 			.query('member')
 			.filter(q => q.and(q.eq(q.field('groupId'), args.groupId), q.eq(q.field('userId'), args.userId)))
-			.collect()
-		await ctx.db.delete(member[0]._id)
+			.first()
+		if (membre) await ctx.db.delete(membre._id)
 	}
 })

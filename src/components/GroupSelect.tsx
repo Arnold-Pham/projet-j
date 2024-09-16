@@ -23,6 +23,11 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
 	const toggleModal = () => setModalOpen(!modalOpen)
 
+	const handleSelectGroup = (group: { id: string; name: string }) => {
+		onSelectGroup(group)
+		setDrawerOpen(false)
+	}
+
 	//	Fonction pour créer un groupe
 	const handleCreateGroup = async (event: any) => {
 		event.preventDefault()
@@ -71,9 +76,8 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 					<path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M5 7h14M5 12h14M5 17h14" />
 				</svg>
 			</button>
-
 			{/* Le tiroir */}
-			<div className={`${drawerOpen ? '-translate-x-0' : 'translate-x-full'} ${style.drawer}`}>
+			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
 				<div>
 					<div className={style.head}>
 						<div className={style.header}>
@@ -123,13 +127,12 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 					</div>
 
 					{/* Liste des groupes */}
-					<GroupList onSelectGroup={onSelectGroup} />
+					<GroupList onSelectGroup={handleSelectGroup} />
 				</div>
 			</div>
 
 			{/* Couverture du tiroir */}
 			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
-
 			{/* Modal pour créer ou rejoindre un groupe */}
 			{modalOpen && (
 				<div className={style.modalBack} onClick={handleModalClick}>

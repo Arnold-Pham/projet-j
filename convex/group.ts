@@ -74,13 +74,9 @@ export const deleteGroup = mutation({
 			.filter(q => q.eq(q.field('groupId'), groupId))
 			.collect()
 
-		for (const message of messages) {
-			await ctx.db.delete(message._id)
-		}
+		for (const message of messages) await ctx.db.delete(message._id)
 
-		for (const member of members) {
-			await ctx.db.delete(member._id)
-		}
+		for (const member of members) await ctx.db.delete(member._id)
 
 		await ctx.db.delete(groupId)
 	}

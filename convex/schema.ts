@@ -21,6 +21,14 @@ export default defineSchema(
 			userId: v.string(),
 			user: v.string(),
 			role: v.string()
+		}),
+		invitationCode: defineTable({
+			groupId: v.id('group'),
+			creatorId: v.string(),
+			code: v.string(),
+			currentUses: v.number(),
+			maxUses: v.optional(v.number()),
+			expiresAt: v.optional(v.number())
 		})
 	},
 	{ schemaValidation: true }

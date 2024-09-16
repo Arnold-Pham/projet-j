@@ -8,13 +8,19 @@ import style from '../styles/groupStyle'
 export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
 	//	Obtention des informations utilisateur via Clerk
 	const { user } = useUser()
+	const [noExpiry, setNoExpiry] = useState(false) // État pour la case à cocher "Pas d'expiration"
+	const [duration, setDuration] = useState('') // État pour la durée de validité (nombre)
+	const [durationUnit, setDurationUnit] = useState('days') // État pour l'unité de durée (jours, semaines, mois)
+	const [maxUses, setMaxUses] = useState('') // État pour le nombre maximum d'utilisations
 
 	//	États pour gérer l'état du modal et la selection de groupe
 	const [modalOpen, setModalOpen] = useState(false)
+	const [codeModalOpen, setCodeModalOpen] = useState(false)
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 	const [selectedGroup, setSelectedGroup] = useState<{ id: string } | null>(null)
 
 	//	Mutation pour supprimer un membre du groupe
+	const createCode = useMutation(api.invitationCode.createCode)
 	const deleteMember = useMutation(api.members.deleteMember)
 	const deleteGroup = useMutation(api.group.deleteGroup)
 
@@ -71,6 +77,56 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		}
 	}
 
+	//	Fonction pour ouvrir le modal de code
+	const handleCode = (groupId: string) => {
+		setSelectedGroup({ id: groupId })
+		setCodeModalOpen(true)
+	}
+
+	const convertToUnix = () => {
+		if (noExpiry) return undefined
+
+		let durationInSeconds = 0
+		const secondsInDay = 86400
+		const secondsInWeek = secondsInDay * 7
+		const secondsInMonth = secondsInDay * 30
+
+		if (durationUnit === 'days') durationInSeconds = Number(duration) * secondsInDay
+		if (durationUnit === 'weeks') durationInSeconds = Number(duration) * secondsInWeek
+		if (durationUnit === 'months') durationInSeconds = Number(duration) * secondsInMonth
+
+		const dateMax = Math.floor(Date.now()) + durationInSeconds
+		return dateMax
+	}
+
+	const getMaxUses = () => {
+		if (maxUses === '' || Number(maxUses) <= 0) return undefined
+		return Number(maxUses)
+	}
+
+	//	Fonction pour confirmer les paramètres d'expiration du code
+	const handleConfirmCode = async () => {
+		const maxUse = getMaxUses()
+		const expire = convertToUnix()
+		if (selectedGroup !== null)
+			await createCode({
+				groupId: selectedGroup.id as Id<'group'>,
+				creatorId: user?.id || '',
+				maxUses: maxUse,
+				expiresAt: expire
+			})
+		codeClear()
+	}
+
+	const codeClear = () => {
+		setMaxUses('')
+		setDuration('')
+		setNoExpiry(false)
+		setSelectedGroup(null)
+		setCodeModalOpen(false)
+		setDurationUnit('days')
+	}
+
 	return (
 		<div className={`grp ${style.listDiv}`}>
 			{/* Liste des groupes auxquels l'utilisateur appartient */}
@@ -80,6 +136,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 						<li key={group._id} className={style.listElem} onClick={() => onSelectGroup({ id: group._id, name: group.name })}>
 							{group.name}
 							<div className={style.btnGrp}>
+								{/* Bouton pour quitter un groupe */}
 								<button
 									className={style.btnLeave}
 									onClick={e => {
@@ -97,6 +154,8 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 										/>
 									</svg>
 								</button>
+
+								{/* Bouton pour supprimer un groupe */}
 								{group.userId === user?.id && (
 									<button
 										className={style.btnLeave}
@@ -154,6 +213,61 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 							</button>
 							<button onClick={handleConfirmDelete} className={style.btnLeave}>
 								Supprimer
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* Modal pour les paramètres du code */}
+			{codeModalOpen && (
+				<div className={style.modalBack}>
+					<div ref={modalRef} className={style.modal}>
+						<h2 className={style.title}>Création du code d'invitation</h2>
+						<p>Expiration:</p>
+
+						{/* Si "never" n'est pas coché, afficher les champs de durée */}
+						{!noExpiry && (
+							<div className="flex">
+								<input
+									type="number"
+									value={duration}
+									placeholder="Durée"
+									onChange={e => setDuration(e.target.value)}
+									className={`${style.input}`}
+								/>
+								<select value={durationUnit} onChange={e => setDurationUnit(e.target.value)} className={style.input}>
+									<option value="days">Jour(s)</option>
+									<option value="weeks">Semaine(s)</option>
+									<option value="months">Mois</option>
+								</select>
+							</div>
+						)}
+
+						{/* Checkbox "never" pour désactiver l'expiration */}
+						<label className="flex items-center">
+							<input type="checkbox" checked={noExpiry} onChange={() => setNoExpiry(!noExpiry)} />
+							Pas d'expiration (Never)
+						</label>
+
+						{/* Nombre maximum d'utilisations */}
+						<label>
+							Utilisations max :
+							<input
+								type="number"
+								value={maxUses}
+								onChange={e => setMaxUses(e.target.value)}
+								className={style.input}
+								placeholder="Utilisations max"
+							/>
+						</label>
+
+						<div className={style.btnGrp}>
+							<button onClick={codeClear} className={style.btnCancel}>
+								Annuler
+							</button>
+							<button onClick={handleConfirmCode} className={style.btnLeave}>
+								Confirmer
 							</button>
 						</div>
 					</div>
