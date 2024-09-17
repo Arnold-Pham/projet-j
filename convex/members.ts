@@ -20,7 +20,7 @@ export const addMember = mutation({
 	}
 })
 
-export const listMembers = query({
+export const listMembers = mutation({
 	args: {
 		groupId: v.string()
 	},

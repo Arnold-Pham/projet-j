@@ -19,6 +19,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null)
 
 	const deleteGroup = useMutation(api.group.deleteGroup)
+	const listMembers = useMutation(api.members.listMembers)
 	const deleteMember = useMutation(api.members.deleteMember)
 	const createCode = useMutation(api.invitationCode.createCode)
 	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
@@ -77,14 +78,19 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		}
 	}
 
-	const handleLeave = (groupId: string, group: string) => {
+	const handleLeave = async (groupId: string, group: string) => {
 		setSelectedGroup({ id: groupId, name: group })
 		setLeaveModal(true)
 	}
 
 	const handleConfirmLeave = async () => {
 		if (selectedGroup) {
-			await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
+			const result = await listMembers({ groupId: selectedGroup.id })
+
+			result.length === 1
+				? await deleteGroup({ groupId: selectedGroup.id as Id<'group'> })
+				: await deleteMember({ groupId: selectedGroup.id as Id<'group'>, userId: user?.id || '' })
+
 			onSelectGroup(null)
 			setLeaveModal(false)
 			setSelectedGroup(null)

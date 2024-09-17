@@ -1,7 +1,7 @@
 {
 	"name": "projet-j",
 	"private": true,
-	"version": "0.3.5a",
+	"version": "0.3.6a",
 	"type": "module",
 	"scripts": {
 		"dev": "npm-run-all --parallel dev:frontend dev:backend",
