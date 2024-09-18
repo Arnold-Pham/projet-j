@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
@@ -18,7 +18,6 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	const createGroup = useMutation(api.group.createGroup)
 	const useCode = useMutation(api.invitationCode.useCode)
 
-	const toggleModal = () => setModalOpen(prev => !prev)
 	const toggleDrawer = () => setDrawerOpen(prev => !prev)
 
 	const clearForm = () => {
@@ -27,6 +26,18 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 		setGroupName('')
 		setInviteCode('')
 	}
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			if (modalOpen) clearForm()
+			else if (drawerOpen) toggleDrawer()
+		}
+	}
+
+	useEffect(() => {
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [modalOpen, drawerOpen])
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
@@ -53,7 +64,7 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 					<h2 className={style.head}>Mes groupes</h2>
 
 					<div className={style.btnGrp}>
-						<button onClick={toggleModal} className={style.close}>
+						<button onClick={() => setModalOpen(true)} className={style.close}>
 							<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-tint-bis">
 								<path strokeWidth="3" d="M5 12h14m-7 7V5" stroke="currentColor" />
 							</svg>

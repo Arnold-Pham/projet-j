@@ -30,10 +30,16 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
 
 	const closeModal = (e: MouseEvent) => modalRef.current && !modalRef.current.contains(e.target as Node) && setModal({ type: '', group: null })
+	const handleKeyDown = (e: any) => e.key === 'Escape' && setModal({ type: '', group: null })
 
 	useEffect(() => {
 		document.addEventListener('mousedown', closeModal)
-		return () => document.removeEventListener('mousedown', closeModal)
+		document.addEventListener('keydown', handleKeyDown)
+
+		return () => {
+			document.removeEventListener('mousedown', closeModal)
+			document.removeEventListener('keydown', handleKeyDown)
+		}
 	}, [])
 
 	const handleAction = async (action: 'delete' | 'leave' | 'createCode' | '') => {
