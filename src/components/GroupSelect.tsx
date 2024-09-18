@@ -18,126 +18,66 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	const createGroup = useMutation(api.group.createGroup)
 	const useCode = useMutation(api.invitationCode.useCode)
 
-	const toggleModal = () => setModalOpen(!modalOpen)
-	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
+	const toggleModal = () => setModalOpen(prev => !prev)
+	const toggleDrawer = () => setDrawerOpen(prev => !prev)
 
-	const handleSelectGroup = (group: { id: string; name: string } | null) => {
-		onSelectGroup(group)
-		setDrawerOpen(false)
-	}
-
-	const handleCreateGroup = async (e: React.FormEvent) => {
-		e.preventDefault()
-		if (groupName.trim() !== '') {
-			const newGroup = await createGroup({
-				userId: user?.id || '',
-				user: user?.username || '',
-				name: groupName
-			})
-
-			await addMember({
-				groupId: newGroup,
-				group: groupName,
-				userId: user?.id || '',
-				user: user?.username || '',
-				role: 'admin'
-			})
-
-			codeClear()
-		}
-	}
-
-	const handleJoinGroup = async (e: React.FormEvent) => {
-		e.preventDefault()
-		if (inviteCode.trim() !== '') {
-			await useCode({
-				code: inviteCode.trim(),
-				userId: user?.id || '',
-				user: user?.username || ''
-			})
-
-			codeClear()
-		}
-	}
-
-	const handleModalClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (e.target === e.currentTarget) codeClear()
-	}
-
-	const codeClear = () => {
-		setIsCreatingGroup(true)
+	const clearForm = () => {
 		setModalOpen(false)
-		setInviteCode('')
+		setIsCreatingGroup(true)
 		setGroupName('')
+		setInviteCode('')
+	}
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
+		if (isCreatingGroup) {
+			if (groupName.trim()) {
+				const newGroup = await createGroup({ userId: user?.id || '', user: user?.username || '', name: groupName })
+				await addMember({ groupId: newGroup, group: groupName, userId: user?.id || '', user: user?.username || '', role: 'admin' })
+			}
+		} else inviteCode.trim() && (await useCode({ code: inviteCode.trim(), userId: user?.id || '', user: user?.username || '' }))
+
+		clearForm()
 	}
 
 	return (
 		<div>
 			<button onClick={toggleDrawer} className={style.burger}>
-				<svg className="w-5 h-5 text-tint-bis" aria-hidden="true" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-					<path stroke="currentColor" strokeLinecap="round" strokeWidth="3" d="M5 7h14M5 12h14M5 17h14" />
+				<svg className="w-5 h-5 text-tint-bis" fill="currentColor" viewBox="0 0 24 24">
+					<path stroke="currentColor" strokeWidth="3" d="M5 7h14M5 12h14M5 17h14" />
 				</svg>
 			</button>
 
 			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
-				<div>
-					<div className={style.head}>
-						<div className={style.header}>
-							<h2 className={style.title}>Mes groupes</h2>
-							<div className={style.btnGrp}>
-								<button onClick={toggleModal} className={style.close}>
-									<svg
-										width="24"
-										height="24"
-										aria-hidden="true"
-										fill="currentColor"
-										viewBox="0 0 24 24"
-										className="w-5 h-5 text-tint-bis"
-									>
-										<path
-											strokeWidth="3"
-											d="M5 12h14m-7 7V5"
-											stroke="currentColor"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-										/>
-									</svg>
-								</button>
+				<div className={style.header}>
+					<h2 className={style.head}>Mes groupes</h2>
 
-								<button onClick={toggleDrawer} className={style.close}>
-									<svg
-										width="24"
-										height="24"
-										aria-hidden="true"
-										fill="currentColor"
-										viewBox="0 0 24 24"
-										className="w-5 h-5 text-tint-bis"
-									>
-										<path
-											strokeWidth="3"
-											stroke="currentColor"
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											d="M6 18 17.94 6M18 18 6.06 6"
-										/>
-									</svg>
-								</button>
-							</div>
-						</div>
+					<div className={style.btnGrp}>
+						<button onClick={toggleModal} className={style.close}>
+							<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-tint-bis">
+								<path strokeWidth="3" d="M5 12h14m-7 7V5" stroke="currentColor" />
+							</svg>
+						</button>
+
+						<button onClick={toggleDrawer} className={style.close}>
+							<svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" className="w-5 h-5 text-tint-bis">
+								<path strokeWidth="3" d="M6 18 17.94 6M18 18 6.06 6" stroke="currentColor" />
+							</svg>
+						</button>
 					</div>
-
-					<GroupList onSelectGroup={handleSelectGroup} />
 				</div>
+
+				<GroupList onSelectGroup={onSelectGroup} />
 			</div>
 
 			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
 
 			{modalOpen && (
-				<div className={style.modalBack} onClick={handleModalClick}>
+				<div className={style.modalBack} onClick={clearForm}>
 					<div className={style.modal} onClick={e => e.stopPropagation()}>
 						<h2 className={style.title}>{isCreatingGroup ? 'Créer un Groupe' : 'Rejoindre un Groupe'}</h2>
 
-						<form onSubmit={isCreatingGroup ? handleCreateGroup : handleJoinGroup}>
+						<form onSubmit={handleSubmit}>
 							<input
 								required
 								maxLength={32}
@@ -146,21 +86,21 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 								placeholder={isCreatingGroup ? 'Nom du groupe' : "Code d'invitation"}
 								onChange={e => (isCreatingGroup ? setGroupName(e.target.value) : setInviteCode(e.target.value))}
 							/>
+
 							<div className={style.btnFormGrp}>
-								<button type="button" onClick={toggleModal} className={style.btnCancel}>
+								<button type="button" onClick={clearForm} className={style.btnCancel}>
 									Annuler
 								</button>
+
 								<button type="submit" className={style.btnCreate}>
 									{isCreatingGroup ? 'Créer' : 'Rejoindre'}
 								</button>
 							</div>
 						</form>
 
-						<div className="mt-2">
-							<p onClick={() => setIsCreatingGroup(!isCreatingGroup)} className="cursor-pointer underline">
-								{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}
-							</p>
-						</div>
+						<p onClick={() => setIsCreatingGroup(prev => !prev)} className="cursor-pointer underline">
+							{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}
+						</p>
 					</div>
 				</div>
 			)}

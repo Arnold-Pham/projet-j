@@ -57,7 +57,7 @@ body {
 }
 
 .grp {
-	max-height: calc(100vh - 66px);
+	max-height: calc(100vh - 72px);
 }
 
 button.envoyer {
