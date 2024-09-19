@@ -13,7 +13,7 @@ export default function NotificationContainer({
 			if (notifications.length > 0) {
 				removeNotification(notifications[notifications.length - 1].id)
 			}
-		}, 2000)
+		}, 3000)
 
 		return () => clearTimeout(timer)
 	}, [notifications, removeNotification])

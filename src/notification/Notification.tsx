@@ -1,7 +1,7 @@
 export default function Notification({ id, success, message, close }: { id: number; success: number; message: string; close: () => void }) {
 	return (
 		<div key={id} className={success === 0 ? style.non : style.oui} onClick={close}>
-			{message}
+			{success === 3 ? <div dangerouslySetInnerHTML={{ __html: message }} /> : message}
 		</div>
 	)
 }

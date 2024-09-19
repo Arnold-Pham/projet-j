@@ -15,9 +15,9 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 		group: null
 	})
 
-	const [codeParams, setCodeParams] = useState<{ maxUses: string; duration: string; unit: string; noExpiry: boolean; error: string | null }>({
+	const [codeParams, setCodeParams] = useState<{ maxUses: string; duration: number; unit: string; noExpiry: boolean; error: string | null }>({
 		maxUses: '',
-		duration: '',
+		duration: 1,
 		unit: 'days',
 		noExpiry: false,
 		error: null
@@ -62,7 +62,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 
 				const expiresAt = noExpiry
 					? undefined
-					: Date.now() + Number(duration) * (unit === 'days' ? 86400 : unit === 'weeks' ? 604800 : 2592000) * 1000
+					: Date.now() + duration * (unit === 'days' ? 86400 : unit === 'weeks' ? 604800 : 2592000) * 1000
 
 				result = await createCode({
 					groupId: id as Id<'group'>,
@@ -74,11 +74,13 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 
 				setCodeParams({
 					maxUses: '',
-					duration: '',
+					duration: 1,
 					unit: 'days',
 					noExpiry: false,
 					error: null
 				})
+
+				navigator.clipboard.writeText(result.code)
 				break
 		}
 
@@ -207,19 +209,20 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 								{!codeParams.noExpiry && (
 									<div className={style.btnGrp}>
 										<input
+											min="1"
 											type="number"
 											placeholder="Durée"
 											className={style.input}
 											value={codeParams.duration}
-											onChange={e => setCodeParams({ ...codeParams, duration: e.target.value })}
+											onChange={e => setCodeParams({ ...codeParams, duration: Number(e.target.value) })}
 										/>
 										<select
 											value={codeParams.unit}
 											className={style.input}
 											onChange={e => setCodeParams({ ...codeParams, unit: e.target.value })}
 										>
-											<option value="days">Jour(s)</option>
-											<option value="weeks">Semaine(s)</option>
+											<option value="days">{codeParams.duration === 1 ? 'Jour' : 'Jours'}</option>
+											<option value="weeks">{codeParams.duration === 1 ? 'Semaine' : 'Semaines'}</option>
 											<option value="months">Mois</option>
 										</select>
 									</div>
