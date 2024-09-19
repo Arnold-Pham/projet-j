@@ -22,7 +22,7 @@ export const createGroup = mutation({
 			role: 'admin'
 		})
 
-		return { success: true, message: 'Groupe créé' }
+		return { success: 1, message: 'Groupe créé' }
 	}
 })
 
@@ -55,7 +55,7 @@ export const listMyGroups = query({
 
 		const groupsWithRoles = groups.map(group => {
 			const memberData = groupData.find(data => data.groupId === group._id)
-			return { ...group, role: memberData?.role || 'mermber' }
+			return { ...group, role: memberData?.role || 'member' }
 		})
 
 		return groupsWithRoles
@@ -105,5 +105,6 @@ export const deleteGroup = mutation({
 		for (const code of codes) await ctx.db.delete(code._id)
 
 		await ctx.db.delete(groupId)
+		return { success: 1, message: 'Groupe effacé' }
 	}
 })

@@ -44,7 +44,8 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 			const notif = isCreatingGroup
 				? await createGroup({ userId: user?.id || '', user: user?.username || '', name: input.trim() })
 				: await useCode({ code: input.trim(), userId: user?.id || '', user: user?.username || '' })
-			addNotification({ success: notif.success ? 1 : 0, message: notif.message })
+			addNotification({ success: notif.success, message: notif.message })
+			notif.success && clearForm()
 		}
 	}
 

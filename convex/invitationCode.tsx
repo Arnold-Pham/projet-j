@@ -45,6 +45,8 @@ export const createCode = mutation({
 			maxUses: args.maxUses,
 			expiresAt: args.expiresAt
 		})
+
+		return { success: 1, message: `Code d'invitation créé : ${codeGen}` }
 	}
 })
 
@@ -60,14 +62,14 @@ export const useCode = mutation({
 			.filter(q => q.eq(q.field('code'), args.code))
 			.first()
 
-		if (!invitationCode) return { success: false, message: "Code d'invitation invalide." }
+		if (!invitationCode) return { success: 0, message: "Code d'invitation invalide." }
 
 		const { maxUses, currentUses, expiresAt } = invitationCode
 
 		if (maxUses !== undefined && maxUses > 0 && currentUses >= maxUses)
-			return { success: false, message: "Le code d'invitation a atteint le nombre maximum d'utilisations." }
+			return { success: 0, message: "Le code d'invitation a atteint le nombre maximum d'utilisations." }
 
-		if (expiresAt !== undefined && expiresAt < Date.now()) return { success: false, message: "Le code d'invitation a expiré." }
+		if (expiresAt !== undefined && expiresAt < Date.now()) return { success: 0, message: "Le code d'invitation a expiré." }
 
 		await ctx.db.insert('member', {
 			groupId: invitationCode.groupId,
@@ -79,6 +81,6 @@ export const useCode = mutation({
 
 		await ctx.db.patch(invitationCode._id, { currentUses: invitationCode.currentUses + 1 })
 
-		return { success: true, message: "Code d'invitation valide et membre ajouté avec succès." }
+		return { success: 1, message: "Code d'invitation valide et membre ajouté avec succès." }
 	}
 })

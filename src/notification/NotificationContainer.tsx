@@ -11,7 +11,7 @@ export default function NotificationContainer({
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			if (notifications.length > 0) {
-				removeNotification(notifications[0].id)
+				removeNotification(notifications[notifications.length - 1].id)
 			}
 		}, 2000)
 

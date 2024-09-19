@@ -20,7 +20,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
 	const addNotification = (notification: Omit<NotificationType, 'id'>) => {
 		const id = new Date().getTime()
-		setNotifications(prev => [...prev, { ...notification, id }])
+		setNotifications(prev => [{ ...notification, id }, ...prev])
 	}
 
 	const removeNotification = (id: number) => {

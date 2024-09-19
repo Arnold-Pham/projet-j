@@ -1,3 +1,4 @@
+import { useNotification } from '@/notification/NotificationContext'
 import { Id } from '../../convex/_generated/dataModel'
 import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect, useRef } from 'react'
@@ -7,6 +8,7 @@ import style from '../styles/groupStyle'
 
 export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
+	const { addNotification } = useNotification()
 
 	const [modal, setModal] = useState<{ type: 'leave' | 'delete' | 'createCode' | ''; group: { id: string; name: string } | null }>({
 		type: '',
@@ -24,13 +26,14 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const modalRef = useRef<HTMLDivElement>(null)
 
 	const deleteGroup = useMutation(api.group.deleteGroup)
-	const listMembers = useMutation(api.members.listMembers)
 	const deleteMember = useMutation(api.members.deleteMember)
 	const createCode = useMutation(api.invitationCode.createCode)
 	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
 
-	const closeModal = (e: MouseEvent) => modalRef.current && !modalRef.current.contains(e.target as Node) && setModal({ type: '', group: null })
+	if (!myGroups) return <div>Chargement des groupes...</div>
+
 	const handleKeyDown = (e: any) => e.key === 'Escape' && setModal({ type: '', group: null })
+	const closeModal = (e: MouseEvent) => modalRef.current && !modalRef.current.contains(e.target as Node) && setModal({ type: '', group: null })
 
 	useEffect(() => {
 		document.addEventListener('mousedown', closeModal)
@@ -44,41 +47,25 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 
 	const handleAction = async (action: 'delete' | 'leave' | 'createCode' | '') => {
 		if (!modal.group || action === '') return
+
 		const { id } = modal.group
-
-		if (action === 'delete')
-			await deleteGroup({
-				groupId: id as Id<'group'>
-			})
-
-		if (action === 'leave') {
-			const members = await listMembers({
-				groupId: id
-			})
-
-			members.length === 1
-				? await deleteGroup({
-						groupId: id as Id<'group'>
-					})
-				: await deleteMember({
-						groupId: id as Id<'group'>,
-						userId: user?.id || ''
-					})
-		}
-
+		if (action === 'delete') addNotification(await deleteGroup({ groupId: id as Id<'group'> }))
+		if (action === 'leave') addNotification(await deleteMember({ groupId: id as Id<'group'>, userId: user?.id || '' }))
 		if (action === 'createCode') {
 			const { maxUses, duration, unit, noExpiry } = codeParams
 			const expiresAt = noExpiry
 				? undefined
 				: Date.now() + Number(duration) * (unit === 'days' ? 86400 : unit === 'weeks' ? 604800 : 2592000) * 1000
 
-			await createCode({
-				groupId: id as Id<'group'>,
-				group: modal.group.name,
-				creatorId: user?.id || '',
-				maxUses: Number(maxUses) || undefined,
-				expiresAt
-			})
+			addNotification(
+				await createCode({
+					groupId: id as Id<'group'>,
+					group: modal.group.name,
+					creatorId: user?.id || '',
+					maxUses: Number(maxUses) || undefined,
+					expiresAt
+				})
+			)
 
 			setCodeParams({
 				maxUses: '',
@@ -88,13 +75,9 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 				error: null
 			})
 		}
-
 		setModal({ type: '', group: null })
-
 		onSelectGroup(null)
 	}
-
-	if (!myGroups) return <div>Chargement des groupes...</div>
 
 	return (
 		<div className={style.listDiv}>
