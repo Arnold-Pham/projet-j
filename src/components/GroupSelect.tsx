@@ -1,30 +1,30 @@
+import NotificationContainer from '@/utils/NotificationContainer'
+import { api } from '../../convex/_generated/api'
+import { useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
 import { useMutation } from 'convex/react'
-import { useUser } from '@clerk/clerk-react'
-import { api } from '../../convex/_generated/api'
 import style from '../styles/groupStyle'
 import GroupList from './GroupList'
 
 export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
 
-	const [groupName, setGroupName] = useState<string>('')
-	const [inviteCode, setInviteCode] = useState<string>('')
+	const [input, setInput] = useState<string>('')
 	const [modalOpen, setModalOpen] = useState<boolean>(false)
 	const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 	const [isCreatingGroup, setIsCreatingGroup] = useState<boolean>(true)
+	const [alert, setAlert] = useState<{ success: boolean; message: string } | null>(null)
 
-	const addMember = useMutation(api.members.addMember)
 	const createGroup = useMutation(api.group.createGroup)
 	const useCode = useMutation(api.invitationCode.useCode)
 
 	const toggleDrawer = () => setDrawerOpen(prev => !prev)
 
 	const clearForm = () => {
+		setInput('')
+		setAlert(null)
 		setModalOpen(false)
 		setIsCreatingGroup(true)
-		setGroupName('')
-		setInviteCode('')
 	}
 
 	const handleKeyDown = (e: KeyboardEvent) => {
@@ -41,14 +41,13 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
-		if (isCreatingGroup) {
-			if (groupName.trim()) {
-				const newGroup = await createGroup({ userId: user?.id || '', user: user?.username || '', name: groupName })
-				await addMember({ groupId: newGroup, group: groupName, userId: user?.id || '', user: user?.username || '', role: 'admin' })
-			}
-		} else inviteCode.trim() && (await useCode({ code: inviteCode.trim(), userId: user?.id || '', user: user?.username || '' }))
-
-		clearForm()
+		if (input.trim()) {
+			setAlert(
+				isCreatingGroup
+					? await createGroup({ userId: user?.id || '', user: user?.username || '', name: input.trim() })
+					: await useCode({ code: input.trim(), userId: user?.id || '', user: user?.username || '' })
+			)
+		}
 	}
 
 	return (
@@ -91,11 +90,11 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 						<form onSubmit={handleSubmit}>
 							<input
 								required
+								value={input}
 								maxLength={32}
 								className={style.input}
-								value={isCreatingGroup ? groupName : inviteCode}
+								onChange={e => setInput(e.target.value)}
 								placeholder={isCreatingGroup ? 'Nom du groupe' : "Code d'invitation"}
-								onChange={e => (isCreatingGroup ? setGroupName(e.target.value) : setInviteCode(e.target.value))}
 							/>
 
 							<div className={style.btnFormGrp}>
@@ -108,6 +107,8 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 								</button>
 							</div>
 						</form>
+
+						{alert && <NotificationContainer success={alert.success ? 1 : 0} message={alert.message} onAction={clearForm} />}
 
 						<p onClick={() => setIsCreatingGroup(prev => !prev)} className="cursor-pointer underline">
 							{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}

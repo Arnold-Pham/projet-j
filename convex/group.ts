@@ -13,7 +13,16 @@ export const createGroup = mutation({
 			user: args.user,
 			name: args.name
 		})
-		return groupId
+
+		await ctx.db.insert('member', {
+			groupId: groupId,
+			group: args.name,
+			userId: args.userId,
+			user: args.user,
+			role: 'admin'
+		})
+
+		return { success: true, message: 'Groupe créé' }
 	}
 })
 
@@ -26,19 +35,24 @@ export const listMyGroups = query({
 			.query('member')
 			.filter(q => q.eq(q.field('userId'), args.userId))
 			.collect()
+
 		const groupData = myGroups.map(member => ({
 			groupId: member.groupId,
 			role: member.role
 		}))
+
 		const groupIds = Array.from(new Set(groupData.map(data => data.groupId)))
+
 		const groupsPromises = groupIds.map(groupId =>
 			ctx.db
 				.query('group')
 				.filter(q => q.eq(q.field('_id'), groupId))
 				.collect()
 		)
+
 		const groupsResults = await Promise.all(groupsPromises)
 		const groups = groupsResults.flat()
+
 		const groupsWithRoles = groups.map(group => {
 			const memberData = groupData.find(data => data.groupId === group._id)
 			return { ...group, role: memberData?.role || 'mermber' }
