@@ -30,8 +30,6 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const createCode = useMutation(api.invitationCode.createCode)
 	const myGroups = useQuery(api.group.listMyGroups, { userId: user?.id || '' })
 
-	if (!myGroups) return <div>Chargement des groupes...</div>
-
 	const handleKeyDown = (e: any) => e.key === 'Escape' && setModal({ type: '', group: null })
 	const closeModal = (e: MouseEvent) => modalRef.current && !modalRef.current.contains(e.target as Node) && setModal({ type: '', group: null })
 
@@ -48,36 +46,48 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 	const handleAction = async (action: 'delete' | 'leave' | 'createCode' | '') => {
 		if (!modal.group || action === '') return
 
+		let result
 		const { id } = modal.group
-		if (action === 'delete') addNotification(await deleteGroup({ groupId: id as Id<'group'> }))
-		if (action === 'leave') addNotification(await deleteMember({ groupId: id as Id<'group'>, userId: user?.id || '' }))
-		if (action === 'createCode') {
-			const { maxUses, duration, unit, noExpiry } = codeParams
-			const expiresAt = noExpiry
-				? undefined
-				: Date.now() + Number(duration) * (unit === 'days' ? 86400 : unit === 'weeks' ? 604800 : 2592000) * 1000
+		switch (action) {
+			case 'delete':
+				result = await deleteGroup({ groupId: id as Id<'group'> })
+				break
 
-			addNotification(
-				await createCode({
+			case 'leave':
+				result = await deleteMember({ groupId: id as Id<'group'>, userId: user?.id || '' })
+				break
+
+			case 'createCode':
+				const { maxUses, duration, unit, noExpiry } = codeParams
+
+				const expiresAt = noExpiry
+					? undefined
+					: Date.now() + Number(duration) * (unit === 'days' ? 86400 : unit === 'weeks' ? 604800 : 2592000) * 1000
+
+				result = await createCode({
 					groupId: id as Id<'group'>,
 					group: modal.group.name,
 					creatorId: user?.id || '',
 					maxUses: Number(maxUses) || undefined,
 					expiresAt
 				})
-			)
 
-			setCodeParams({
-				maxUses: '',
-				duration: '',
-				unit: 'days',
-				noExpiry: false,
-				error: null
-			})
+				setCodeParams({
+					maxUses: '',
+					duration: '',
+					unit: 'days',
+					noExpiry: false,
+					error: null
+				})
+				break
 		}
+
+		addNotification(result)
 		setModal({ type: '', group: null })
 		onSelectGroup(null)
 	}
+
+	if (!myGroups) return <div>Chargement des groupes...</div>
 
 	return (
 		<div className={style.listDiv}>
