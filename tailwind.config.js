@@ -33,6 +33,9 @@ module.exports = {
 			},
 			boxShadow: {
 				'custom-menu': '6px 6px 12px 2px rgba(0, 0, 0, 0.5)'
+			},
+			zIndex: {
+				max: '999'
 			}
 		}
 	},

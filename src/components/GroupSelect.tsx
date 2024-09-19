@@ -1,4 +1,4 @@
-import NotificationContainer from '@/utils/NotificationContainer'
+import { useNotification } from '@/notification/NotificationContext'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
 import { useEffect, useState } from 'react'
@@ -8,12 +8,12 @@ import GroupList from './GroupList'
 
 export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
+	const { addNotification } = useNotification()
 
 	const [input, setInput] = useState<string>('')
 	const [modalOpen, setModalOpen] = useState<boolean>(false)
 	const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 	const [isCreatingGroup, setIsCreatingGroup] = useState<boolean>(true)
-	const [alert, setAlert] = useState<{ success: boolean; message: string } | null>(null)
 
 	const createGroup = useMutation(api.group.createGroup)
 	const useCode = useMutation(api.invitationCode.useCode)
@@ -22,7 +22,6 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 
 	const clearForm = () => {
 		setInput('')
-		setAlert(null)
 		setModalOpen(false)
 		setIsCreatingGroup(true)
 	}
@@ -42,11 +41,10 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault()
 		if (input.trim()) {
-			setAlert(
-				isCreatingGroup
-					? await createGroup({ userId: user?.id || '', user: user?.username || '', name: input.trim() })
-					: await useCode({ code: input.trim(), userId: user?.id || '', user: user?.username || '' })
-			)
+			const notif = isCreatingGroup
+				? await createGroup({ userId: user?.id || '', user: user?.username || '', name: input.trim() })
+				: await useCode({ code: input.trim(), userId: user?.id || '', user: user?.username || '' })
+			addNotification({ success: notif.success ? 1 : 0, message: notif.message })
 		}
 	}
 
@@ -107,8 +105,6 @@ export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: 
 								</button>
 							</div>
 						</form>
-
-						{alert && <NotificationContainer success={alert.success ? 1 : 0} message={alert.message} onAction={clearForm} />}
 
 						<p onClick={() => setIsCreatingGroup(prev => !prev)} className="cursor-pointer underline">
 							{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}

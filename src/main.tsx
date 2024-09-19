@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client'
 import React from 'react'
 import App from './App'
 import './index.css'
+import { NotificationProvider } from '@/notification/NotificationContext'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
 		<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
 			<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-				<App />
+				<NotificationProvider>
+					<App />
+				</NotificationProvider>
 			</ConvexProviderWithClerk>
 		</ClerkProvider>
 	</React.StrictMode>
