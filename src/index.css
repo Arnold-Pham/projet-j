@@ -53,11 +53,25 @@ body {
 }
 
 .tchat {
-	max-height: calc(100vh - 136px);
+	height: calc(100vh - 136px);
+	width: 100vw;
 }
 
-.grp {
-	max-height: calc(100vh - 72px);
+.grpL {
+	height: calc(100vh - 72px);
+}
+
+.connect {
+	width: 100vw;
+}
+
+@media (min-width: 768px) {
+	.connect {
+		width: calc(100vw - 20rem);
+	}
+	.tchat {
+		width: calc(100vw - 20rem);
+	}
 }
 
 button.envoyer {

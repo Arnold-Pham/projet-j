@@ -1,11 +1,11 @@
-import { ClerkProvider, useAuth } from '@clerk/clerk-react'
+import { NotificationProvider } from '@/notification/NotificationContext'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
+import { ClerkProvider, useAuth } from '@clerk/clerk-react'
 import { ConvexReactClient } from 'convex/react'
 import ReactDOM from 'react-dom/client'
 import React from 'react'
 import App from './App'
 import './index.css'
-import { NotificationProvider } from '@/notification/NotificationContext'
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
 

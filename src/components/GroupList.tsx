@@ -4,7 +4,7 @@ import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect, useRef } from 'react'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
-import style from '../styles/groupStyle'
+import style from '@/styles/groupStyle'
 
 export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
@@ -97,25 +97,19 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 				{myGroups.length > 0 ? (
 					<>
 						{myGroups.map(group => (
-							<li key={group._id} className={style.listLi} onClick={() => onSelectGroup({ id: group._id, name: group.name })}>
+							<li className={style.listLi} key={group._id} onClick={() => onSelectGroup({ id: group._id, name: group.name })}>
 								{group.name}
 
-								<div className={style.btnGrp}>
+								<div className={style.buttonGroup}>
 									{group.role === 'admin' && (
 										<button
+											className={style.button}
 											onClick={e => {
 												e.stopPropagation()
-												setModal({
-													type: 'createCode',
-													group: {
-														id: group._id,
-														name: group.name
-													}
-												})
+												setModal({ type: 'createCode', group: { id: group._id, name: group.name } })
 											}}
-											className={style.btnAction}
 										>
-											<svg width="24" height="24" fill="none" aria-hidden="true" viewBox="0 0 24 24" className="w-5 h-5">
+											<svg fill="none" aria-hidden="true" viewBox="0 0 24 24" className={style.svg}>
 												<path
 													stroke-width="2"
 													stroke="currentColor"
@@ -128,19 +122,13 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 									)}
 
 									<button
+										className={style.button}
 										onClick={e => {
 											e.stopPropagation()
-											setModal({
-												type: 'leave',
-												group: {
-													id: group._id,
-													name: group.name
-												}
-											})
+											setModal({ type: 'leave', group: { id: group._id, name: group.name } })
 										}}
-										className={style.btnAction}
 									>
-										<svg width="24" height="24" aria-hidden="true" fill="none" viewBox="0 0 24 24" className="w-5 h-5">
+										<svg aria-hidden="true" fill="none" viewBox="0 0 24 24" className={style.svg}>
 											<path
 												stroke-width="2"
 												stroke="currentColor"
@@ -153,19 +141,13 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 
 									{group.role === 'admin' && (
 										<button
+											className={style.button}
 											onClick={e => {
 												e.stopPropagation()
-												setModal({
-													type: 'delete',
-													group: {
-														id: group._id,
-														name: group.name
-													}
-												})
+												setModal({ type: 'delete', group: { id: group._id, name: group.name } })
 											}}
-											className={style.btnAction}
 										>
-											<svg width="24" height="24" fill="none" aria-hidden="true" viewBox="0 0 24 24" className="w-5 h-5">
+											<svg fill="none" aria-hidden="true" viewBox="0 0 24 24" className={style.svg}>
 												<path
 													stroke-width="2"
 													stroke="currentColor"
@@ -188,14 +170,11 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 			{modal.type && (
 				<div className={style.modalBack}>
 					<div className={style.modal} ref={modalRef}>
-						{modal.type === 'leave' && <p className={style.title}>Confirmer votre départ ?</p>}
-
-						{modal.type === 'delete' && <p className={style.title}>Confirmer la suppression du groupe ?</p>}
-
+						{modal.type === 'leave' && <p className={style.title}>Vous voulez vraiment quiter le groupe ?</p>}
+						{modal.type === 'delete' && <p className={style.title}>Vous voulez vraiment supprimer le groupe ?</p>}
 						{modal.type === 'createCode' && (
 							<>
 								<p className={style.title}>Création d'un code d'invitation</p>
-
 								{codeParams.error && <p>{codeParams.error}</p>}
 
 								<input
@@ -207,7 +186,7 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 								/>
 
 								{!codeParams.noExpiry && (
-									<div className={style.btnGrp}>
+									<div className={style.buttonGroup}>
 										<input
 											min="1"
 											type="number"
@@ -239,12 +218,12 @@ export default function GroupList({ onSelectGroup }: { onSelectGroup: (group: { 
 							</>
 						)}
 
-						<div className={style.btnFormGrp}>
-							<button className={style.btnLeave} onClick={() => handleAction(modal.type)}>
+						<div className={style.buttonGroup + ' mt-2 flex justify-end'}>
+							<button className={style.buttonStyle + ' bg-green-800 text-white'} onClick={() => handleAction(modal.type)}>
 								Confirmer
 							</button>
 
-							<button className={style.btnCancel} onClick={() => setModal({ type: '', group: null })}>
+							<button className={style.buttonStyle + ' bg-red-800 text-white'} onClick={() => setModal({ type: '', group: null })}>
 								Annuler
 							</button>
 						</div>
