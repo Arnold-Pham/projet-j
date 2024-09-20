@@ -3,27 +3,27 @@ import style from '../styles/themeStyle'
 
 export default function Theme() {
 	const THEME_KEY = 'theme'
+	const [showButtons, setShowButtons] = useState(false)
 	const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+	const toggleButtons = () => setShowButtons(!showButtons)
 
 	const [theme, setTheme] = useState(() => {
 		const savedTheme = localStorage.getItem(THEME_KEY)
 		if (savedTheme) return savedTheme
+
 		return prefersDarkMode ? 'dark' : 'light'
 	})
-
-	const [showButtons, setShowButtons] = useState(false)
-
-	useEffect(() => {
-		theme === 'system' ? document.body.classList.toggle('dark', prefersDarkMode) : document.body.classList.toggle('dark', theme === 'dark')
-		localStorage.setItem(THEME_KEY, theme)
-	}, [theme])
 
 	const handleThemeChange = (newTheme: any) => {
 		setTheme(newTheme)
 		setShowButtons(false)
 	}
 
-	const toggleButtons = () => setShowButtons(!showButtons)
+	useEffect(() => {
+		theme === 'system' ? document.body.classList.toggle('dark', prefersDarkMode) : document.body.classList.toggle('dark', theme === 'dark')
+		localStorage.setItem(THEME_KEY, theme)
+	}, [theme])
 
 	const renderIcon = (theme: any) => {
 		switch (theme) {
@@ -53,14 +53,12 @@ export default function Theme() {
 
 	return (
 		<div className={style.btnGrp}>
-			{/* Theme selectionné */}
 			{!showButtons && (
 				<button onClick={toggleButtons} className={style.btn}>
 					{renderIcon(theme)}
 				</button>
 			)}
 
-			{/* Tous les thèmes */}
 			{showButtons && (
 				<>
 					<button onClick={() => handleThemeChange('light')} className={style.btn}>

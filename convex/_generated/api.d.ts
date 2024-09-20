@@ -16,6 +16,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as group from "../group.js";
+import type * as invitationCode from "../invitationCode.js";
 import type * as members from "../members.js";
 import type * as message from "../message.js";
 
@@ -29,6 +30,7 @@ import type * as message from "../message.js";
  */
 declare const fullApi: ApiFromModules<{
   group: typeof group;
+  invitationCode: typeof invitationCode;
   members: typeof members;
   message: typeof message;
 }>;

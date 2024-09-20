@@ -1,101 +1,118 @@
+import { useNotification } from '@/notification/NotificationContext'
 import { api } from '../../convex/_generated/api'
 import { useUser } from '@clerk/clerk-react'
+import { useEffect, useState } from 'react'
 import { useMutation } from 'convex/react'
-import style from '../styles/groupStyle'
+import style from '@/styles/groupStyle'
 import GroupList from './GroupList'
-import { useState } from 'react'
 
-export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string }) => void }) {
+export default function GroupSelect({ onSelectGroup }: { onSelectGroup: (group: { id: string; name: string } | null) => void }) {
 	const { user } = useUser()
-	const [groupName, setGroupName] = useState('')
-	const [drawerOpen, setDrawerOpen] = useState(false)
+	const { addNotification } = useNotification()
 
-	//	Gère fonctions externes groupes
-	const addMember = useMutation(api.members.addMember)
+	const [input, setInput] = useState<string>('')
+	const [modalOpen, setModalOpen] = useState<boolean>(false)
+	const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
+	const [isCreatingGroup, setIsCreatingGroup] = useState<boolean>(true)
+
 	const createGroup = useMutation(api.group.createGroup)
+	const useCode = useMutation(api.invitationCode.useCode)
 
-	//	Gère le menu caché gauche
-	const toggleDrawer = () => setDrawerOpen(!drawerOpen)
+	const clearForm = () => {
+		setInput('')
+		setModalOpen(false)
+		setIsCreatingGroup(true)
+	}
 
-	//	Création de groupe + auto join
-	const handleSubmit = async (event: any) => {
-		event.preventDefault()
-		if (groupName.trim() !== '') {
-			const newGroup = await createGroup({
-				userId: user?.id || '',
-				user: user?.username || '',
-				name: groupName
-			})
-
-			await addMember({
-				groupId: newGroup,
-				group: groupName,
-				userId: user?.id || '',
-				user: user?.username || '',
-				role: 'admin'
-			})
+	const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === 'Escape') {
+			if (modalOpen) clearForm()
+			else setDrawerOpen(false)
 		}
-		setGroupName('')
+	}
+
+	useEffect(() => {
+		document.addEventListener('keydown', handleKeyDown)
+		return () => document.removeEventListener('keydown', handleKeyDown)
+	}, [modalOpen, drawerOpen])
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault()
+
+		if (input.trim()) {
+			const notif = isCreatingGroup
+				? await createGroup({ userId: user?.id || '', user: user?.username || '', name: input.trim() })
+				: await useCode({ code: input.trim(), userId: user?.id || '', user: user?.username || '' })
+
+			addNotification({ success: notif.success, message: notif.message })
+			notif.success && clearForm()
+		}
 	}
 
 	return (
-		<div>
-			{/* Bouton burger pour ouvrir le tiroir */}
-			<button onClick={toggleDrawer} className={style.burger}>
-				<svg className="w-5 h-5 text-tint-bis" aria-hidden="true" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-					<path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M5 7h14M5 12h14M5 17h14" />
-				</svg>
-			</button>
+		<>
+			{drawerOpen && <div className={style.drawerBack} onClick={() => setDrawerOpen(false)}></div>}
 
-			{/* Le tiroir */}
-			<div className={`${drawerOpen ? 'translate-x-0' : '-translate-x-full'} ${style.drawer}`}>
-				<div>
-					<div className={style.head}>
-						<div className={style.header}>
-							<h2 className="text-lg font-semibold">Groupes</h2>
-
-							{/* Bouton fermer le tiroir */}
-							<button onClick={toggleDrawer} className={style.close}>
-								<svg
-									width="24"
-									height="24"
-									aria-hidden="true"
-									fill="currentColor"
-									viewBox="0 0 24 24"
-									className="w-5 h-5 text-tint-bis"
-								>
-									<path
-										stroke-width="3"
-										stroke="currentColor"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M6 18 17.94 6M18 18 6.06 6"
-									/>
-								</svg>
-							</button>
-						</div>
-					</div>
-
-					{/* Liste des groupes */}
-					<GroupList onSelectGroup={onSelectGroup} />
-
-					{/* Création de groupe */}
-					<form onSubmit={handleSubmit} className={style.form}>
-						<label>Créer un groupe : </label>
-						<input
-							required
-							maxLength={32}
-							value={groupName}
-							className={style.input}
-							placeholder="Nom du groupe"
-							onChange={e => setGroupName(e.target.value)}
-						/>
-						<button type="submit" className={style.button}></button>
-					</form>
+			<div className={style.drawer + (drawerOpen ? ' translate-x-0' : ' -translate-x-full')}>
+				<div className={style.header}>
+					<h2 className={style.title}>Mes groupes</h2>
+					<button className={style.button} onClick={() => setModalOpen(true)}>
+						<svg className={style.svg} fill="currentColor" viewBox="0 0 24 24">
+							<path strokeWidth="3" stroke="currentColor" d="M5 12h14m-7 7V5" />
+						</svg>
+					</button>
 				</div>
+
+				<GroupList onSelectGroup={onSelectGroup} />
+
+				<button className={style.drawerButton + ' md:hidden'} onClick={() => setDrawerOpen(!drawerOpen)}>
+					<svg className={style.svg} fill="currentColor" viewBox="0 0 24 24">
+						{drawerOpen ? (
+							<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7" />
+						) : (
+							<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7" />
+						)}
+					</svg>
+				</button>
 			</div>
 
-			{drawerOpen && <div className={style.back} onClick={toggleDrawer}></div>}
-		</div>
+			{modalOpen && (
+				<div className={style.modalBack} onClick={clearForm}>
+					<div className={style.modal} onClick={e => e.stopPropagation()}>
+						<h2 className={style.title + ' mb-2'}>{isCreatingGroup ? 'Créer un Groupe' : 'Rejoindre un Groupe'}</h2>
+
+						<form onSubmit={handleSubmit}>
+							<input
+								className={style.input}
+								required
+								value={input}
+								maxLength={32}
+								onChange={e => setInput(e.target.value)}
+								placeholder={isCreatingGroup ? 'Nom du groupe' : "Code d'invitation"}
+							/>
+
+							<div className={style.buttonGroup + ' mt-2'}>
+								<button className={style.buttonStyle + ' bg-tone-ter'} type="button" onClick={clearForm}>
+									Annuler
+								</button>
+
+								<button
+									className={style.buttonStyle + (isCreatingGroup ? ' bg-green-800 text-white' : ' bg-blue-800 text-white')}
+									type="submit"
+								>
+									{isCreatingGroup ? 'Créer' : 'Rejoindre'}
+								</button>
+							</div>
+						</form>
+
+						<hr className={style.separator} />
+
+						<p className={style.change} onClick={() => setIsCreatingGroup(prev => !prev)}>
+							{isCreatingGroup ? 'Rejoindre un groupe ?' : 'Créer un groupe ?'}
+						</p>
+					</div>
+				</div>
+			)}
+		</>
 	)
 }

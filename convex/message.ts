@@ -3,7 +3,7 @@ import { v } from 'convex/values'
 
 export const sendMessage = mutation({
 	args: {
-		groupId: v.string(),
+		groupId: v.id('group'),
 		group: v.string(),
 		userId: v.string(),
 		user: v.string(),
@@ -22,7 +22,7 @@ export const sendMessage = mutation({
 
 export const listMessages = query({
 	args: {
-		groupId: v.string()
+		groupId: v.id('group')
 	},
 	handler: async (ctx, args) => {
 		const msgs = await ctx.db
