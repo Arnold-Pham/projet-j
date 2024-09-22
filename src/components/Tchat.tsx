@@ -154,7 +154,7 @@ export default function Tchat({ groupId, groupName }: { groupId: string; groupNa
 						{edit === message._id ? (
 							<form
 								onSubmit={e => handleEditSubmit(e, message._id)}
-								className={!isSameAuthorAsPrev ? style.bubE + ' rounded-tr-lg' : style.bubE}
+								className={!isSameAuthorAsPrev ? style.bubE + ' rounded-tl-lg' : style.bubE}
 							>
 								<textarea
 									rows={1}

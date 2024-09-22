@@ -16,7 +16,7 @@ const style = {
 
 	// Message en cours d'édition
 	msgE: 'text-justify rounded-tl-lg rounded-tr-lg rounded-br-lg resize-none overflow-auto focus:outline-none bg-org',
-	bubE: 'flex flex-col w-full px-4 py-3 rounded-tl-lg rounded-br-lg bg-org text-acc',
+	bubE: 'flex flex-col w-full px-4 py-3 rounded-tr-lg rounded-br-lg bg-org text-acc break-words',
 
 	// Menu contextuel
 	menu: 'absolute z-50 px-2 py-1 bg-tone text-tint shadow-custom-menu',
