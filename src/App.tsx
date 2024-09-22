@@ -18,10 +18,10 @@ export default function App() {
 				<header className="connect h-16 md:ms-80 flex justify-between items-center bg-tone-bis">
 					<Header />
 				</header>
+				<main>{selectedGroup && <Tchat groupId={selectedGroup.id} groupName={selectedGroup.name} />}</main>
 				<aside>
 					<GroupSelect onSelectGroup={setSelectedGroup} />
 				</aside>
-				<main>{selectedGroup && <Tchat groupId={selectedGroup.id} groupName={selectedGroup.name} />}</main>
 			</Authenticated>
 		</>
 	)
